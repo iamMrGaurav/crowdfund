@@ -80,8 +80,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/auth/**").permitAll()  // Public auth endpoints
-                        .requestMatchers("/api/public/**").permitAll() // Public API endpoints
+                        .requestMatchers("v1/api/auth/**").permitAll()  // Public auth endpoints
+                        .requestMatchers("v1/api/public/**").permitAll() // Public API endpoints
                         .anyRequest().authenticated()                 // Everything else requires authentication
                 )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
