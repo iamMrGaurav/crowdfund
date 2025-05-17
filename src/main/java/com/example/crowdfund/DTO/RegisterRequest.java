@@ -4,6 +4,7 @@ package com.example.crowdfund.DTO;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
 import lombok.Data;
 
 @Data
@@ -20,17 +21,13 @@ public class RegisterRequest {
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
+    @NotBlank(message = "firstName is required")
+    @Size(max = 10, message = "firstName must be below 10 characters")
     private String firstName;
+
+    @NotBlank(message = "lastName is required")
+    @Size(max = 10, message = "lastName must be below 10 characters")
     private String lastName;
 
 }
 
-@Data
-class LoginRequest {
-
-    @NotBlank(message = "Username or Email cannot be empty")
-    private String usernameOrEmail;
-
-    @NotBlank(message = "Password is required")
-    private String password;
-}
