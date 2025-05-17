@@ -24,6 +24,7 @@ public class AuthenticationService {
     public String authenticateAndGenerateToken(String username, String password) {
         try {
             // Authenticate the user with Spring Security
+
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(username, password)
             );
@@ -33,8 +34,8 @@ public class AuthenticationService {
             return jwtService.genToken(userDetails);
 
         } catch (AuthenticationException e) {
-            // Authentication failed
-            return null;
+            System.out.println("Exception" + e);
+            throw e;
         }
     }
 }

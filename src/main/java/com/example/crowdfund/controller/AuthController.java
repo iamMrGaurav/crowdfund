@@ -26,6 +26,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+
         // Authenticate user and generate token
         String token = authenticationService.authenticateAndGenerateToken(
                 loginRequest.getUsernameOrEmail(),
