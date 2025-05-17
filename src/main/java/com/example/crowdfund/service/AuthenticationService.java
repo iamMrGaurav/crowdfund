@@ -15,6 +15,12 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
+    /**
+     * Authenticate a user and generate a JWT token
+     * @param username The username
+     * @param password The password
+     * @return JWT token if authentication successful, null otherwise
+     */
     public String authenticateAndGenerateToken(String username, String password) {
         try {
             // Authenticate the user with Spring Security
