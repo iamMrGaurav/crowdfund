@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
-@RequestMapping("/api/auth")
+@RequestMapping("v1/api/auth")
 @RestController
 @RequiredArgsConstructor
 public class AuthController {
@@ -50,8 +50,8 @@ public class AuthController {
 
         Map<String, Object> response = new HashMap<>();
         User user = userService.createUser(registerRequest);
+
         response.put("User", user);
-        response.put("isCreated", true);
 
         return ResponseEntity.ok(response);
     }

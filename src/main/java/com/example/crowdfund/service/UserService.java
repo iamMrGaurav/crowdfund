@@ -2,6 +2,7 @@ package com.example.crowdfund.service;
 
 
 import com.example.crowdfund.DTO.RegisterRequest;
+import com.example.crowdfund.GloablExceptionHandler.ResourceAlreadyExistsException;
 import com.example.crowdfund.entity.User;
 import com.example.crowdfund.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -20,11 +21,11 @@ public class UserService {
     @Transactional
     public User createUser(RegisterRequest request)  {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new IllegalArgumentException("Username is already taken");
+            throw new ResourceAlreadyExistsException("Username is already taken");
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email is already registered");
+            throw new ResourceAlreadyExistsException("Email is already registered");
         }
 
         User user = User.builder()
