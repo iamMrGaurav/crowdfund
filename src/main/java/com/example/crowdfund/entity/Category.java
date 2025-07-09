@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "categories")
@@ -26,8 +24,6 @@ public class Category {
 
     private String iconUrl;
 
-//    @OneToMany(mappedBy = "category")
-//    private List<Campaign> campaigns = new ArrayList<>();
 
     private Boolean active = true;
 }
