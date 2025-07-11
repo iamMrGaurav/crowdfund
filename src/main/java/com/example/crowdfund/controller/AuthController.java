@@ -1,6 +1,5 @@
 package com.example.crowdfund.controller;
 
-
 import com.example.crowdfund.DTO.LoginRequest;
 import com.example.crowdfund.DTO.RegisterRequest;
 import com.example.crowdfund.entity.User;
@@ -27,7 +26,6 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
 
-        // Authenticate user and generate token
         String token = authenticationService.authenticateAndGenerateToken(
                 loginRequest.getUsernameOrEmail(),
                 loginRequest.getPassword()
@@ -37,7 +35,6 @@ public class AuthController {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));
         }
 
-        // Return token in response
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);
         response.put("username", loginRequest.getUsernameOrEmail());

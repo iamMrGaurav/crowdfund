@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("v1/api/campaigns")
+@RequestMapping("/v1/api/campaigns")
 @RequiredArgsConstructor
 public class CampaignController {
     
@@ -22,15 +22,27 @@ public class CampaignController {
     private final UserService userService;
 
     @PostMapping("/draft")
-    public ResponseEntity<?> saveDraft(
-            @RequestBody CampaignRequest campaignRequest,
-            Authentication authentication) {
+    public ResponseEntity<?> saveDraft( @RequestBody CampaignRequest campaignRequest, Authentication authentication) {
 
         User currentUser = userService.findByUsername(authentication.getName());
         Campaign campaign = campaignService.saveDraft(campaignRequest, currentUser);
 
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Draft saved successfully");
+        response.put("campaign", campaign);
+
+        return ResponseEntity.ok(response);
+    }
+
+
+    @PostMapping("/submit-draft/{campaignId}")
+    public ResponseEntity<?> submitReview(@RequestBody CampaignRequest campaignRequest, @PathVariable Long campaignId, Authentication authentication){
+
+        User currentUser = userService.findByUsername(authentication.getName());
+        Campaign campaign = campaignService.submitReview(campaignId, campaignRequest, currentUser);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Campaign submitted for review successfully");
         response.put("campaign", campaign);
 
         return ResponseEntity.ok(response);
