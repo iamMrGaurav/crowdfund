@@ -26,4 +26,6 @@ public class CategoryService {
     public List<Category> findActiveCategories() {
         return categoryRepository.findByActiveTrue();
     }
+
+
 }
