@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
@@ -37,5 +39,12 @@ public class UserService {
                 .build();
 
         return userRepository.save(user);
+    }
+
+    public User findByUsername(String username) {
+        Optional<User> user = userRepository.findByUsername(username);
+        return user.orElseThrow(() -> 
+            new ResourceAlreadyExistsException("User not found with username: " + username)
+        );
     }
 }
