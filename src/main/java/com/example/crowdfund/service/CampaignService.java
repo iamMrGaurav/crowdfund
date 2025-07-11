@@ -55,13 +55,11 @@ public class CampaignService {
 
     public Campaign submitReview(Long campaignId, CampaignRequest request, User user) {
         Campaign campaign = findById(campaignId);
-        
-        // Security check: only creator can submit
+
         if (!campaign.getCreator().getId().equals(user.getId())) {
             throw new BadRequestException("You can only submit your own campaigns");
         }
-        
-        // Business rule check: only DRAFT can be submitted
+
         if (campaign.getStatus() != CampaignStatus.DRAFT) {
             throw new BadRequestException("Only draft campaigns can be submitted for review");
         }
@@ -71,8 +69,7 @@ public class CampaignService {
         
         // Validate complete campaign before submission
         validateForSubmission(campaign);
-        
-        // Change status to PENDING
+
         campaign.setStatus(CampaignStatus.PENDING);
         
         return campaignRepository.save(campaign);
@@ -108,8 +105,7 @@ public class CampaignService {
 
     private void validateForSubmission(Campaign campaign) {
         List<String> errors = new ArrayList<>();
-        
-        // Required field checks
+
         if (isBlank(campaign.getTitle())) {
             errors.add("Title is required");
         }

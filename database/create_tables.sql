@@ -221,3 +221,10 @@ LEFT JOIN (
     FROM likes
     GROUP BY campaign_id
 ) like_stats ON c.id = like_stats.campaign_id;
+
+
+ALTER TABLE campaigns
+  ALTER COLUMN title DROP NOT NULL,
+  ALTER COLUMN funding_goal DROP NOT NULL,
+  ALTER COLUMN deadline DROP NOT NULL,
+  ALTER COLUMN category_id DROP NOT NULL;
