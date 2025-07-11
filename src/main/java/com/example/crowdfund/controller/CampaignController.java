@@ -47,4 +47,17 @@ public class CampaignController {
 
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/create-campaign")
+    public ResponseEntity<?> createCampaign( @RequestBody CampaignRequest campaignRequest, Authentication authentication) {
+
+        User currentUser = userService.findByUsername(authentication.getName());
+        Campaign campaign = campaignService.createCampaign(campaignRequest, currentUser);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Draft saved successfully");
+        response.put("campaign", campaign);
+
+        return ResponseEntity.ok(response);
+    }
 }

@@ -75,13 +75,33 @@ public class CampaignService {
         return campaignRepository.save(campaign);
     }
 
+    public Campaign createCampaign(CampaignRequest campaignRequest, User creator) {
+        Campaign campaign = new Campaign();
+
+        // Set creator first
+        campaign.setCreator(creator);
+        
+        // Update with fresh data from request
+        updateCampaignFromRequest(campaign, campaignRequest);
+
+        // Validate complete campaign before submission
+        validateForSubmission(campaign);
+
+        // Set status to PENDING (direct submission)
+        campaign.setStatus(CampaignStatus.PENDING);
+
+        return campaignRepository.save(campaign);
+    }
+
     private void updateCampaignFromRequest(Campaign campaign, CampaignRequest request) {
         if (request.getTitle() != null) {
             campaign.setTitle(request.getTitle());
         }
+
         if (request.getShortDescription() != null) {
             campaign.setShortDescription(request.getShortDescription());
         }
+
         if (request.getFullDescription() != null) {
             campaign.setFullDescription(request.getFullDescription());
         }
