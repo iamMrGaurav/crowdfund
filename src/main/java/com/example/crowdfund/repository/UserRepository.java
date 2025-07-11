@@ -16,7 +16,6 @@ public interface UserRepository extends JpaRepository<User, Long>{ // Long is Pr
 }
 
 /*
-
 Meaning of this = JpaRepository<User (Entity used), Long (Primary Key))>
 
 Why REPOSITORY is INTERFACE ?

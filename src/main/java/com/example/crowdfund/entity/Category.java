@@ -24,6 +24,5 @@ public class Category {
 
     private String iconUrl;
 
-
     private Boolean active = true;
 }
