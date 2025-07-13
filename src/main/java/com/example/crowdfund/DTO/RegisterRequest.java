@@ -4,6 +4,7 @@ package com.example.crowdfund.DTO;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.Data;
 
@@ -28,6 +29,9 @@ public class RegisterRequest {
     @NotBlank(message = "lastName is required")
     @Size(max = 10, message = "lastName must be below 10 characters")
     private String lastName;
+
+    private String bio;
+    private MultipartFile avatar;
 
 }
 

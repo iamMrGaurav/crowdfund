@@ -24,5 +24,5 @@ public class CampaignRequest {
     private Long categoryId;
     private List<String> imageUrls;
     private MultipartFile[] images;
-    private List<String> imagesToRemove; // URLs of existing images to remove
+    private List<String> imagesToRemove;
 }

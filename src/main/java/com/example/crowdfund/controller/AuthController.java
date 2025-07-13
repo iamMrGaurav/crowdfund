@@ -7,11 +7,9 @@ import com.example.crowdfund.service.AuthenticationService;
 import com.example.crowdfund.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,8 +40,8 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest){
+    @PostMapping(value = "/register", consumes = {"application/json", "multipart/form-data"})
+    public ResponseEntity<?> registerUser(@ModelAttribute RegisterRequest registerRequest) throws IOException {
 
         Map<String, Object> response = new HashMap<>();
         User user = userService.createUser(registerRequest);
