@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import com.example.crowdfund.enums.Currency;
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @NoArgsConstructor
@@ -22,4 +23,5 @@ public class CampaignRequest {
     private LocalDateTime deadline;
     private Long categoryId;
     private List<String> imageUrls;
+    private MultipartFile[] images;
 }
