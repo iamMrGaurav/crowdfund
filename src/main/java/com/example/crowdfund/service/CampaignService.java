@@ -40,8 +40,11 @@ public class CampaignService {
         campaign.setCurrency(campaignRequest.getCurrency());
         campaign.setDeadline(campaignRequest.getDeadline());
 
-        // Handle file uploads
+        // Handle file uploads with 5-image limit
         if (images != null && images.length > 0) {
+            if (images.length > 5) {
+                throw new BadRequestException("Maximum 5 images allowed");
+            }
             List<String> uploadedUrls = imageService.uploadImage(images);
             campaign.setImageUrls(uploadedUrls);
         }
@@ -55,6 +58,43 @@ public class CampaignService {
         campaign.setStatus(CampaignStatus.DRAFT);
 
         return campaignRepository.save(campaign);
+    }
+
+    public Campaign updateDraft(Long campaignId, CampaignRequest campaignRequest, User user) throws IOException {
+        Campaign campaign = findById(campaignId);
+
+        if (!campaign.getCreator().getId().equals(user.getId())) {
+            throw new BadRequestException("You can only update your own campaigns");
+        }
+
+        if (campaign.getStatus() != CampaignStatus.DRAFT) {
+            throw new BadRequestException("Only draft campaigns can be updated");
+        }
+
+        updateCampaignFromRequest(campaign, campaignRequest);
+        updateCampaignImages(campaign, campaignRequest.getImages(), campaignRequest.getImagesToRemove());
+
+        return campaignRepository.save(campaign);
+    }
+
+    private void updateCampaignImages(Campaign campaign, MultipartFile[] newImages, List<String> imagesToRemove) throws IOException {
+        List<String> currentImages = campaign.getImageUrls() != null ? 
+            new ArrayList<>(campaign.getImageUrls()) : new ArrayList<>();
+
+        if (imagesToRemove != null && !imagesToRemove.isEmpty()) {
+            currentImages.removeAll(imagesToRemove);
+        }
+
+        if (newImages != null && newImages.length > 0) {
+            List<String> uploadedUrls = imageService.uploadImage(newImages);
+            currentImages.addAll(uploadedUrls);
+        }
+
+        if (currentImages.size() > 5) {
+            throw new BadRequestException("Maximum 5 images allowed. Current total would be: " + currentImages.size());
+        }
+
+        campaign.setImageUrls(currentImages);
     }
 
     public Campaign findById(Long id){

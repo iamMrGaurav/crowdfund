@@ -47,9 +47,21 @@ public class CampaignController {
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping(value = "/draft/{campaignId}", consumes = {"multipart/form-data"})
+    public ResponseEntity<?> updateDraft(@PathVariable Long campaignId, @ModelAttribute CampaignRequest campaignRequest, Authentication authentication) throws IOException {
 
-    @PostMapping("/submit-draft/{campaignId}")
-    public ResponseEntity<?> submitReview(@RequestBody CampaignRequest campaignRequest, @PathVariable Long campaignId, Authentication authentication){
+        User currentUser = userService.findByUsername(authentication.getName());
+        Campaign campaign = campaignService.updateDraft(campaignId, campaignRequest, currentUser);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Draft updated successfully");
+        response.put("campaign", campaign);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping(value = "/submit-draft/{campaignId}", consumes = {"multipart/form-data"})
+    public ResponseEntity<?> submitReview(@ModelAttribute CampaignRequest campaignRequest, @PathVariable Long campaignId, Authentication authentication){
 
         User currentUser = userService.findByUsername(authentication.getName());
         Campaign campaign = campaignService.submitReview(campaignId, campaignRequest, currentUser);
