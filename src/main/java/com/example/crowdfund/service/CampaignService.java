@@ -9,8 +9,11 @@ import com.example.crowdfund.entity.User;
 import com.example.crowdfund.enums.CampaignStatus;
 import com.example.crowdfund.repository.CampaignRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -24,7 +27,10 @@ public class CampaignService {
     private final CampaignRepository campaignRepository;
     private final CategoryService categoryService;
 
-    public Campaign saveDraft(CampaignRequest campaignRequest, User creator) {
+    @Autowired
+    private ImageService imageService;
+
+    public Campaign saveDraft(CampaignRequest campaignRequest, User creator, MultipartFile[] images) throws IOException {
         Campaign campaign = new Campaign();
 
         campaign.setTitle(campaignRequest.getTitle());
@@ -33,7 +39,12 @@ public class CampaignService {
         campaign.setFundingGoal(campaignRequest.getFundingGoal());
         campaign.setCurrency(campaignRequest.getCurrency());
         campaign.setDeadline(campaignRequest.getDeadline());
-        campaign.setImageUrls(campaignRequest.getImageUrls());
+
+        // Handle file uploads
+        if (images != null && images.length > 0) {
+            List<String> uploadedUrls = imageService.uploadImage(images);
+            campaign.setImageUrls(uploadedUrls);
+        }
 
         if (campaignRequest.getCategoryId() != null) {
             Category category = categoryService.findById(campaignRequest.getCategoryId());
@@ -75,13 +86,33 @@ public class CampaignService {
         return campaignRepository.save(campaign);
     }
 
+    public Campaign createCampaign(CampaignRequest campaignRequest, User creator) {
+        Campaign campaign = new Campaign();
+
+        // Set creator first
+        campaign.setCreator(creator);
+        
+        // Update with fresh data from request
+        updateCampaignFromRequest(campaign, campaignRequest);
+
+        // Validate complete campaign before submission
+        validateForSubmission(campaign);
+
+        // Set status to PENDING (direct submission)
+        campaign.setStatus(CampaignStatus.PENDING);
+
+        return campaignRepository.save(campaign);
+    }
+
     private void updateCampaignFromRequest(Campaign campaign, CampaignRequest request) {
         if (request.getTitle() != null) {
             campaign.setTitle(request.getTitle());
         }
+
         if (request.getShortDescription() != null) {
             campaign.setShortDescription(request.getShortDescription());
         }
+
         if (request.getFullDescription() != null) {
             campaign.setFullDescription(request.getFullDescription());
         }
