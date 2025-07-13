@@ -73,8 +73,8 @@ public class CampaignController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/create-campaign")
-    public ResponseEntity<?> createCampaign( @RequestBody CampaignRequest campaignRequest, Authentication authentication) {
+    @PostMapping(value = "/create-campaign", consumes = {"multipart/form-data"})
+    public ResponseEntity<?> createCampaign(@ModelAttribute CampaignRequest campaignRequest, Authentication authentication) throws IOException {
 
         User currentUser = userService.findByUsername(authentication.getName());
         Campaign campaign = campaignService.createCampaign(campaignRequest, currentUser);

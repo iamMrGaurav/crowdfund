@@ -40,7 +40,6 @@ public class CampaignService {
         campaign.setCurrency(campaignRequest.getCurrency());
         campaign.setDeadline(campaignRequest.getDeadline());
 
-        // Handle file uploads with 5-image limit
         if (images != null && images.length > 0) {
             if (images.length > 5) {
                 throw new BadRequestException("Maximum 5 images allowed");
@@ -126,7 +125,7 @@ public class CampaignService {
         return campaignRepository.save(campaign);
     }
 
-    public Campaign createCampaign(CampaignRequest campaignRequest, User creator) {
+    public Campaign createCampaign(CampaignRequest campaignRequest, User creator) throws IOException {
         Campaign campaign = new Campaign();
 
         // Set creator first
@@ -134,6 +133,14 @@ public class CampaignService {
         
         // Update with fresh data from request
         updateCampaignFromRequest(campaign, campaignRequest);
+
+        if (campaignRequest.getImages() != null && campaignRequest.getImages().length > 0) {
+            if (campaignRequest.getImages().length > 5) {
+                throw new BadRequestException("Maximum 5 images allowed");
+            }
+            List<String> uploadedUrls = imageService.uploadImage(campaignRequest.getImages());
+            campaign.setImageUrls(uploadedUrls);
+        }
 
         // Validate complete campaign before submission
         validateForSubmission(campaign);

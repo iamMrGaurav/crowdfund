@@ -7,9 +7,11 @@ import com.example.crowdfund.entity.User;
 import com.example.crowdfund.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.Optional;
 
 
@@ -20,8 +22,11 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private ImageService imageService;
+
     @Transactional
-    public User createUser(RegisterRequest request)  {
+    public User createUser(RegisterRequest request) throws IOException {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new ResourceAlreadyExistsException("Username is already taken");
         }
@@ -30,12 +35,19 @@ public class UserService {
             throw new ResourceAlreadyExistsException("Email is already registered");
         }
 
+        String avatarUrl = null;
+        if (request.getAvatar() != null && !request.getAvatar().isEmpty()) {
+            avatarUrl = imageService.uploadAvatar(request.getAvatar());
+        }
+
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
+                .bio(request.getBio())
+                .avatarUrl(avatarUrl)
                 .build();
 
         return userRepository.save(user);
@@ -46,5 +58,31 @@ public class UserService {
         return user.orElseThrow(() -> 
             new ResourceAlreadyExistsException("User not found with username: " + username)
         );
+    }
+
+    public User save(User user) {
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public User updateProfile(RegisterRequest request, User currentUser) throws IOException {
+        if (request.getFirstName() != null && !request.getFirstName().trim().isEmpty()) {
+            currentUser.setFirstName(request.getFirstName());
+        }
+        if (request.getLastName() != null && !request.getLastName().trim().isEmpty()) {
+            currentUser.setLastName(request.getLastName());
+        }
+        if (request.getBio() != null) {
+            currentUser.setBio(request.getBio());
+        }
+
+        if (request.getAvatar() != null && !request.getAvatar().isEmpty()) {
+            String avatarUrl = imageService.uploadAvatar(request.getAvatar());
+            if (avatarUrl != null) {
+                currentUser.setAvatarUrl(avatarUrl);
+            }
+        }
+
+        return userRepository.save(currentUser);
     }
 }

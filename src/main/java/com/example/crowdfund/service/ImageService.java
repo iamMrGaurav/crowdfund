@@ -13,7 +13,19 @@ import java.util.*;
 public class ImageService {
 
     public List<String> uploadImage(MultipartFile[] images) throws IOException {
-        String uploadDir = "file/images/";
+        return uploadImage(images, "file/images/");
+    }
+
+    public String uploadAvatar(MultipartFile avatar) throws IOException {
+        if (avatar == null || avatar.isEmpty()) {
+            return null;
+        }
+        
+        List<String> result = uploadImage(new MultipartFile[]{avatar}, "file/avatars/");
+        return result.isEmpty() ? null : result.get(0);
+    }
+
+    private List<String> uploadImage(MultipartFile[] images, String uploadDir) throws IOException {
         Path uploadPath = Paths.get(uploadDir);
 
         if (!Files.exists(uploadPath)) {
