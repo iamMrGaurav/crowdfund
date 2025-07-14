@@ -1,7 +1,7 @@
 package com.example.crowdfund.controller;
 
-import com.example.crowdfund.DTO.LoginRequest;
-import com.example.crowdfund.DTO.RegisterRequest;
+import com.example.crowdfund.dto.request.LoginRequest;
+import com.example.crowdfund.dto.request.RegisterRequest;
 import com.example.crowdfund.entity.User;
 import com.example.crowdfund.service.authentication.AuthenticationService;
 import com.example.crowdfund.service.user.UserService;

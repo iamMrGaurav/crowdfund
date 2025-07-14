@@ -1,6 +1,6 @@
 package com.example.crowdfund.controller;
 
-import com.example.crowdfund.DTO.CampaignRequest;
+import com.example.crowdfund.dto.request.CampaignRequest;
 import com.example.crowdfund.entity.Campaign;
 import com.example.crowdfund.entity.User;
 import com.example.crowdfund.service.campaign.CampaignService;
@@ -19,10 +19,11 @@ import java.util.Map;
     1. Update Campaign (Tomorrow) - DONE
     2. Pagination (At Last)
     3. Image Upload (Tomorrow) - Login, Campaign - DONE
-    4. Contribution (Stripe, Razor Pay, Google Pay, UPI) (Tomorrow)
-    5. Anonymous Contribution
+    4. Contribution (Stripe, Razor Pay, Google Pay, UPI) (WORKING)
+    5. Anonymous Contribution (WORKING)
     6. Real Time Contribution Leader Board in a campaign
-    7. AI Powered Optimisation
+    7. Searching - Faster
+    8. AI Powered Optimisation
 */
 
 @RestController

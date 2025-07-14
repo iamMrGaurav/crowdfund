@@ -1,6 +1,6 @@
 package com.example.crowdfund.service.campaign;
 
-import com.example.crowdfund.DTO.CampaignRequest;
+import com.example.crowdfund.dto.request.CampaignRequest;
 import com.example.crowdfund.GloablExceptionHandler.BadRequestException;
 import com.example.crowdfund.GloablExceptionHandler.ResourceAlreadyExistsException;
 import com.example.crowdfund.entity.Campaign;

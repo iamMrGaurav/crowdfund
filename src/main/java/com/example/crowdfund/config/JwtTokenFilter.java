@@ -38,21 +38,16 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         final String jwt = authHeader.substring(7);
 
         try {
-            // First check if API key in token matches our application API key
             if (!jwtService.isApiKeyValid(jwt)) {
-                // API key doesn't match - continue without authentication
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            // Extract username from token
             String username = jwtService.extractUsername(jwt);
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // Load user details
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-                // Validate the token with user details (checks username, expiration, etc.)
                 if (jwtService.isTokenValid(jwt, userDetails)) {
                     // Create authentication token
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
@@ -63,14 +58,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                    // Set authentication in context
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
         } catch (Exception e) {
-            // Log exception (optional)
             logger.error("Could not authenticate user: ", e);
-            // Do not set authentication
         }
 
         filterChain.doFilter(request, response);

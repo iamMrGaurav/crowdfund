@@ -1,4 +1,4 @@
-package com.example.crowdfund.DTO;
+package com.example.crowdfund.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;

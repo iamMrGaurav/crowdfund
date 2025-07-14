@@ -1,4 +1,4 @@
-package com.example.crowdfund.DTO;
+package com.example.crowdfund.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

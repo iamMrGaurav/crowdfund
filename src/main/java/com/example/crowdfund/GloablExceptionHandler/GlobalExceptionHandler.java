@@ -1,6 +1,6 @@
 package com.example.crowdfund.GloablExceptionHandler;
 
-import com.example.crowdfund.DTO.ApiError;
+import com.example.crowdfund.dto.response.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,7 +43,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
     }
 
-    // Handle validation errors from @Valid annotation
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleValidationExceptions(
             MethodArgumentNotValidException ex,
@@ -62,7 +61,6 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
 
-        // Add the field errors to the response
         Map<String, Object> response = new HashMap<>();
         response.put("status", apiError.getStatus());
         response.put("message", apiError.getMessage());

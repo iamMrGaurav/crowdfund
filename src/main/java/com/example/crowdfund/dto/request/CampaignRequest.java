@@ -1,4 +1,4 @@
-package com.example.crowdfund.DTO;
+package com.example.crowdfund.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
