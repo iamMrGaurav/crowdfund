@@ -1,6 +1,6 @@
 package com.example.crowdfund.controller;
 
-import com.example.crowdfund.DTO.RegisterRequest;
+import com.example.crowdfund.dto.request.RegisterRequest;
 import com.example.crowdfund.entity.User;
 import com.example.crowdfund.service.user.UserService;
 import lombok.RequiredArgsConstructor;

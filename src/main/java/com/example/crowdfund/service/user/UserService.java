@@ -1,7 +1,7 @@
 package com.example.crowdfund.service.user;
 
 
-import com.example.crowdfund.DTO.RegisterRequest;
+import com.example.crowdfund.dto.request.RegisterRequest;
 import com.example.crowdfund.GloablExceptionHandler.ResourceAlreadyExistsException;
 import com.example.crowdfund.entity.User;
 import com.example.crowdfund.repository.UserRepository;
