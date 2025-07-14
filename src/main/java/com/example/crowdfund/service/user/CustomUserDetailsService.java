@@ -1,6 +1,5 @@
-package com.example.crowdfund.service;
+package com.example.crowdfund.service.user;
 
-import com.example.crowdfund.entity.User;
 import com.example.crowdfund.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

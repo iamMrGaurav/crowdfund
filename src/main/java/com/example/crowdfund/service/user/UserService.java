@@ -1,10 +1,11 @@
-package com.example.crowdfund.service;
+package com.example.crowdfund.service.user;
 
 
 import com.example.crowdfund.DTO.RegisterRequest;
 import com.example.crowdfund.GloablExceptionHandler.ResourceAlreadyExistsException;
 import com.example.crowdfund.entity.User;
 import com.example.crowdfund.repository.UserRepository;
+import com.example.crowdfund.service.document.ImageService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

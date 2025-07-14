@@ -1,4 +1,4 @@
-package com.example.crowdfund.service;
+package com.example.crowdfund.service.authentication;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;

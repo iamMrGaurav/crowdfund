@@ -3,13 +3,12 @@ package com.example.crowdfund.controller;
 import com.example.crowdfund.DTO.CampaignRequest;
 import com.example.crowdfund.entity.Campaign;
 import com.example.crowdfund.entity.User;
-import com.example.crowdfund.service.CampaignService;
-import com.example.crowdfund.service.UserService;
+import com.example.crowdfund.service.campaign.CampaignService;
+import com.example.crowdfund.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashMap;

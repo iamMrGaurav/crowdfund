@@ -1,4 +1,4 @@
-package com.example.crowdfund.service;
+package com.example.crowdfund.service.campaign;
 
 import com.example.crowdfund.DTO.CampaignRequest;
 import com.example.crowdfund.GloablExceptionHandler.BadRequestException;
@@ -8,6 +8,8 @@ import com.example.crowdfund.entity.Category;
 import com.example.crowdfund.entity.User;
 import com.example.crowdfund.enums.CampaignStatus;
 import com.example.crowdfund.repository.CampaignRepository;
+import com.example.crowdfund.service.category.CategoryService;
+import com.example.crowdfund.service.document.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
