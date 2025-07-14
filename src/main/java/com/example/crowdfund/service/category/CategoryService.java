@@ -1,4 +1,4 @@
-package com.example.crowdfund.service;
+package com.example.crowdfund.service.category;
 
 import com.example.crowdfund.entity.Category;
 import com.example.crowdfund.repository.CategoryRepository;

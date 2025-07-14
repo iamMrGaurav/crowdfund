@@ -2,7 +2,7 @@ package com.example.crowdfund.controller;
 
 import com.example.crowdfund.DTO.RegisterRequest;
 import com.example.crowdfund.entity.User;
-import com.example.crowdfund.service.UserService;
+import com.example.crowdfund.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

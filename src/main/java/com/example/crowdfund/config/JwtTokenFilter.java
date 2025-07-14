@@ -1,6 +1,6 @@
 package com.example.crowdfund.config;
 
-import com.example.crowdfund.service.JwtService;
+import com.example.crowdfund.service.authentication.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
