@@ -19,8 +19,9 @@ import java.util.Map;
     1. Update Campaign (Tomorrow) - DONE
     2. Pagination (At Last)
     3. Image Upload (Tomorrow) - Login, Campaign - DONE - DO in S3 bucket
-    4. Contribution (Stripe, Razor Pay, Google Pay, UPI) (WORKING)
-    5. Anonymous Contribution (WORKING)
+    4. Contribution (Stripe, Razor Pay, Google Pay, UPI) (DONE) - Finish remaining parts
+       OnSuccess/OnFailure - Kafka -  Notification Service
+    5. Anonymous Contribution (DONE)
     6. Real Time Contribution Leader Board in a campaign
     7. Searching - Faster
     8. AI Powered Optimisation
