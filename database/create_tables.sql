@@ -12,7 +12,6 @@ DROP TABLE IF EXISTS users CASCADE;
 
 -- Create ENUM types first
 CREATE TYPE campaign_status AS ENUM ('DRAFT', 'PENDING', 'ACTIVE', 'SUCCESSFUL', 'FAILED', 'CANCELED');
-CREATE TYPE payment_status AS ENUM ('PENDING', 'COMPLETED', 'FAILED');
 
 -- 1. Users Table
 CREATE TABLE users (
@@ -115,12 +114,20 @@ CREATE TABLE likes (
 CREATE TABLE payments (
     id BIGSERIAL PRIMARY KEY,
     contribution_id BIGINT NOT NULL,
-    stripe_payment_id VARCHAR(255) UNIQUE NOT NULL,
-    status payment_status DEFAULT 'PENDING',
+    external_payment_id VARCHAR(255) UNIQUE,
+    payment_provider VARCHAR(50) NOT NULL,
+    payment_status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+    currency VARCHAR(10) NOT NULL,
+    amount DECIMAL(38,2) NOT NULL,
+    payment_intent_id VARCHAR(255) UNIQUE,
+    client_secret VARCHAR(255),
+    failure_reason TEXT,
+    payment_method_id VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
-    CONSTRAINT fk_payments_contribution FOREIGN KEY (contribution_id) REFERENCES contributions(id)
+    CONSTRAINT fk_payments_contribution FOREIGN KEY (contribution_id) REFERENCES contributions(id),
+    CONSTRAINT chk_payment_status CHECK (payment_status IN ('PENDING', 'PROCESSING', 'SUCCESSFUL', 'FAILED', 'DECLINED', 'CANCELED'))
 );
 
 -- Create indexes for better performance
@@ -142,7 +149,8 @@ CREATE INDEX idx_comments_date ON comments(created_at DESC);
 CREATE INDEX idx_likes_campaign ON likes(campaign_id);
 CREATE INDEX idx_likes_user ON likes(user_id);
 CREATE INDEX idx_payments_contribution ON payments(contribution_id);
-CREATE INDEX idx_payments_stripe ON payments(stripe_payment_id);
+CREATE INDEX idx_payments_external ON payments(external_payment_id);
+CREATE INDEX idx_payments_status ON payments(payment_status);
 
 -- Create a function to automatically update the updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
