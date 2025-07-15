@@ -1,10 +1,14 @@
 package com.example.crowdfund.entity;
 
-import com.example.crowdfund.enums.PaymentStrategy;
+import com.example.crowdfund.enums.PaymentProvider;
+import com.example.crowdfund.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -12,7 +16,8 @@ import java.time.LocalDateTime;
 @Table(name = "contributions")
 @Data
 @AllArgsConstructor
-
+@NoArgsConstructor
+@Builder
 public class Contribution {
 
     @Id
@@ -37,9 +42,23 @@ public class Contribution {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private PaymentStrategy paymentStrategy;
+    private PaymentProvider paymentProvider;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status", nullable = false)
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+
+    @Column(name = "payment_intent_id", unique = true)
+    private String paymentIntentId;
+
+    @Column(length = 3)
+    private String currency;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

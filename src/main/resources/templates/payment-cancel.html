@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Cancelled</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 100px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .cancel {
+            color: #FF9800;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .session-id {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="cancel">❌ Payment Cancelled</h1>
+    <p>Your payment was cancelled. No charges were made.</p>
+    <div class="session-id" th:if="${sessionId}">
+        <strong>Session ID:</strong> <span th:text="${sessionId}"></span>
+    </div>
+    <p>You can try again or contact support if you need help.</p>
+    <p><a href="/">Return to Home</a></p>
+</body>
+</html>

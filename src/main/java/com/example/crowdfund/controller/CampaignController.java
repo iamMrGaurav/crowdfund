@@ -18,7 +18,7 @@ import java.util.Map;
     TODO
     1. Update Campaign (Tomorrow) - DONE
     2. Pagination (At Last)
-    3. Image Upload (Tomorrow) - Login, Campaign - DONE
+    3. Image Upload (Tomorrow) - Login, Campaign - DONE - DO in S3 bucket
     4. Contribution (Stripe, Razor Pay, Google Pay, UPI) (WORKING)
     5. Anonymous Contribution (WORKING)
     6. Real Time Contribution Leader Board in a campaign

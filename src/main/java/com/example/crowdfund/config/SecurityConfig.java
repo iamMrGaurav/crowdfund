@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import com.example.crowdfund.service.user.CustomUserDetailsService;
 
@@ -32,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;
+    private final CorsConfigurationSource corsConfigurationSource;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -78,10 +80,15 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, JwtTokenFilter jwtTokenFilter) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("v1/api/auth/**").permitAll()  // Public auth endpoints
-                        .requestMatchers("v1/api/public/**").permitAll() // Public API endpoints
+                        .requestMatchers("/v1/api/auth/**").permitAll()  // Public auth endpoints
+                        .requestMatchers("/v1/api/public/**").permitAll() // Public API endpoints
+                        .requestMatchers("/v1/api/payment/**").permitAll() // Public payment endpoints
+                        .requestMatchers("/payment-success").permitAll() // Payment success page
+                        .requestMatchers("/payment-cancel").permitAll()  // Payment cancel page
+                        .requestMatchers("/payment-error").permitAll()   // Payment error page
                         .anyRequest().authenticated()                 // Everything else requires authentication
                 )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);

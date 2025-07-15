@@ -2,18 +2,24 @@ package com.example.crowdfund.entity;
 
 import com.example.crowdfund.enums.Currency;
 import com.example.crowdfund.enums.PaymentStatus;
+import com.example.crowdfund.enums.PaymentProvider;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @AllArgsConstructor
+@NoArgsConstructor
 @Data
 @Table(name = "payments")
+@Builder
 public class Payment {
 
     @Id
@@ -23,11 +29,15 @@ public class Payment {
     @Column(nullable = false)
     private Long contributionId;
 
-    @Column(nullable = false)
-    private String paymentId;
+    @Column(name = "external_payment_id", unique = true)
+    private String externalPaymentId;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "payment_provider", nullable = false)
+    private PaymentProvider paymentProvider;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status", nullable = false)
     private PaymentStatus paymentStatus;
 
     @Enumerated(EnumType.STRING)
@@ -37,8 +47,23 @@ public class Payment {
     @Column(nullable = false)
     private BigDecimal amount;
 
+    @Column(name = "payment_intent_id", unique = true)
+    private String paymentIntentId;
+
+    @Column(name = "client_secret")
+    private String clientSecret;
+
+    @Column(name = "failure_reason")
+    private String failureReason;
+
+    @Column(name = "payment_method_id")
+    private String paymentMethodId;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }
