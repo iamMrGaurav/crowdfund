@@ -1,7 +1,7 @@
 package com.example.crowdfund.dto.request;
 
 import com.example.crowdfund.enums.Currency;
-import com.example.crowdfund.enums.PaymentStrategy;
+import com.example.crowdfund.enums.PaymentProvider;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,7 +18,6 @@ public class ContributionRequest {
     @NotNull(message = "Campaign ID cannot be null")
     private Long campaignId;
 
-    @NotNull(message = "User ID cannot be null")
     private Long userId;
 
     @NotBlank(message = "Message cannot be blank")
@@ -36,8 +35,7 @@ public class ContributionRequest {
     @NotNull(message = "Is Anonymous cannot be null")
     private Boolean isAnonymous;
 
-    @NotNull(message = "payment strategy cannot be null")
-    private PaymentStrategy paymentStrategy;
+    private PaymentProvider paymentProvider;
 
     @NotNull(message = "Currency cannot be null")
     private Currency currency = Currency.USD;

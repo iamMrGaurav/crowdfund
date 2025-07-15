@@ -1,6 +1,6 @@
 package com.example.crowdfund.enums;
 
-public enum PaymentStrategy {
+public enum PaymentProvider {
     STRIPE,
     GOOGLE_PAY,
     UPI,
