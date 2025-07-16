@@ -3,6 +3,7 @@ package com.example.crowdfund.service.payment;
 
 import com.example.crowdfund.entity.Contribution;
 import com.example.crowdfund.entity.Payment;
+import com.example.crowdfund.entity.User;
 import com.example.crowdfund.enums.Currency;
 import com.example.crowdfund.enums.PaymentStatus;
 import com.example.crowdfund.enums.PaymentProvider;
@@ -10,8 +11,12 @@ import com.example.crowdfund.repository.ContributionRepository;
 import com.example.crowdfund.repository.PaymentRepository;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
+import com.stripe.model.Account;
+import com.stripe.model.AccountLink;
 import com.stripe.model.checkout.Session;
 import com.stripe.model.PaymentIntent;
+import com.stripe.param.AccountCreateParams;
+import com.stripe.param.AccountLinkCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.stripe.param.PaymentIntentCreateParams;
 import jakarta.annotation.PostConstruct;
@@ -20,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 
 import java.math.BigDecimal;
 
@@ -113,4 +117,54 @@ public class StripeStrategy implements PaymentStrategy {
         return session;
     }
 
+
+    public String createStripeAccount(User user) throws StripeException {
+        log.info("Creating Stripe Connect account for user: {}", user.getId());
+        
+        AccountCreateParams params = AccountCreateParams.builder()
+                .setType(AccountCreateParams.Type.EXPRESS)
+                .setCountry("US")
+                .setEmail(user.getEmail())
+                .setCapabilities(
+                        AccountCreateParams.Capabilities.builder()
+                                .setCardPayments(
+                                        AccountCreateParams.Capabilities.CardPayments.builder()
+                                                .setRequested(true)
+                                                .build()
+                                )
+                                .setTransfers(
+                                        AccountCreateParams.Capabilities.Transfers.builder()
+                                                .setRequested(true)
+                                                .build()
+                                )
+                                .build()
+                )
+                .build();
+
+        Account account = Account.create(params);
+        
+        log.info("Created Stripe Connect account: {} for user: {}", account.getId(), user.getId());
+        return account.getId();
+    }
+
+    public String createOnboardingLink(String stripeAccountId, String refreshUrl, String returnUrl) throws StripeException {
+        log.info("Creating onboarding link for account: {}", stripeAccountId);
+        
+        AccountLinkCreateParams params = AccountLinkCreateParams.builder()
+                .setAccount(stripeAccountId)
+                .setRefreshUrl(refreshUrl)
+                .setReturnUrl(returnUrl)
+                .setType(AccountLinkCreateParams.Type.ACCOUNT_ONBOARDING)
+                .build();
+
+        AccountLink accountLink = AccountLink.create(params);
+        
+        log.info("Created onboarding link for account: {}", stripeAccountId);
+        return accountLink.getUrl();
+    }
+
+    public boolean isAccountOnboarded(String stripeAccountId) throws StripeException {
+        Account account = Account.retrieve(stripeAccountId);
+        return account.getDetailsSubmitted() && account.getChargesEnabled();
+    }
 }

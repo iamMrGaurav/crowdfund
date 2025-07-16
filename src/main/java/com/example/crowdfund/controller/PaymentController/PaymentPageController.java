@@ -1,4 +1,4 @@
-package com.example.crowdfund.controller;
+package com.example.crowdfund.controller.PaymentController;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
