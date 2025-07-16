@@ -11,7 +11,9 @@ import com.example.crowdfund.repository.PaymentRepository;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
+import com.stripe.model.PaymentIntent;
 import com.stripe.param.checkout.SessionCreateParams;
+import com.stripe.param.PaymentIntentCreateParams;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -45,11 +47,27 @@ public class StripeStrategy implements PaymentStrategy {
         log.info("Creating Stripe Checkout session for contribution: {}", contribution.getId());
 
         long amountInCents = contribution.getAmount().multiply(new BigDecimal(100)).longValue();
+
+        PaymentIntentCreateParams paymentIntentParams = PaymentIntentCreateParams.builder()
+                .setAmount(amountInCents)
+                .setCurrency(contribution.getCurrency().toLowerCase())
+                .putMetadata("contribution_id", contribution.getId().toString())
+                .putMetadata("campaign_id", contribution.getCampaignId().toString())
+                .build();
         
+        PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentParams);
+        log.info("Created PaymentIntent: {} for contribution: {}", paymentIntent.getId(), contribution.getId());
+
         SessionCreateParams params = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setSuccessUrl(successUrl)
                 .setCancelUrl(cancelUrl)
+                .setPaymentIntentData(
+                    SessionCreateParams.PaymentIntentData.builder()
+                        .putMetadata("contribution_id", contribution.getId().toString())
+                        .putMetadata("campaign_id", contribution.getCampaignId().toString())
+                        .build()
+                )
                 .addLineItem(
                     SessionCreateParams.LineItem.builder()
                         .setQuantity(1L)
@@ -73,7 +91,7 @@ public class StripeStrategy implements PaymentStrategy {
 
         Session session = Session.create(params);
 
-        contribution.setPaymentIntentId(session.getId());
+        contribution.setPaymentIntentId(paymentIntent.getId());
         contribution.setPaymentStatus(PaymentStatus.PENDING);
         contribution.setPaymentProvider(PaymentProvider.STRIPE);
         contributionRepository.save(contribution);
@@ -85,7 +103,8 @@ public class StripeStrategy implements PaymentStrategy {
                 .paymentProvider(PaymentProvider.STRIPE)
                 .paymentStatus(PaymentStatus.PENDING)
                 .externalPaymentId(session.getId())
-                .paymentIntentId(session.getId())
+                .paymentIntentId(paymentIntent.getId())
+                .clientSecret(paymentIntent.getClientSecret())
                 .build();
         
         paymentRepository.save(payment);

@@ -56,8 +56,6 @@ public class Payment {
     @Column(name = "failure_reason")
     private String failureReason;
 
-    @Column(name = "payment_method_id")
-    private String paymentMethodId;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
