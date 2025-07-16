@@ -57,7 +57,6 @@ public class ContributionController {
         } catch (StripeException e) {
             log.error("Stripe error creating checkout session", e);
 
-            // Save failure reason to database if contribution was created
             if (contribution.getId() != null) {
                 try {
                     contribution.setPaymentStatus(PaymentStatus.FAILED);
@@ -102,7 +101,6 @@ public class ContributionController {
 
             Session session = Session.retrieve(session_id);
 
-            // Find contribution by external payment ID (session ID) first
             var paymentOpt = paymentRepository.findByExternalPaymentId(session_id);
             
             if (paymentOpt.isEmpty()) {
@@ -121,8 +119,7 @@ public class ContributionController {
                 contributionRepository.save(contribution);
 
                 payment.setPaymentStatus(PaymentStatus.SUCCESSFUL);
-                
-                // Enhanced: Update client secret if needed
+
                 if (payment.getPaymentIntentId() != null && payment.getClientSecret() == null) {
                     try {
                         PaymentIntent paymentIntent = PaymentIntent.retrieve(payment.getPaymentIntentId());

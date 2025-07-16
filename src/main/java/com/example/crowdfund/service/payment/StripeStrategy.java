@@ -47,8 +47,7 @@ public class StripeStrategy implements PaymentStrategy {
         log.info("Creating Stripe Checkout session for contribution: {}", contribution.getId());
 
         long amountInCents = contribution.getAmount().multiply(new BigDecimal(100)).longValue();
-        
-        // Step 1: Create PaymentIntent first to get payment_method_id and client_secret
+
         PaymentIntentCreateParams paymentIntentParams = PaymentIntentCreateParams.builder()
                 .setAmount(amountInCents)
                 .setCurrency(contribution.getCurrency().toLowerCase())
@@ -58,8 +57,7 @@ public class StripeStrategy implements PaymentStrategy {
         
         PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentParams);
         log.info("Created PaymentIntent: {} for contribution: {}", paymentIntent.getId(), contribution.getId());
-        
-        // Step 2: Create Checkout Session with the PaymentIntent
+
         SessionCreateParams params = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setSuccessUrl(successUrl)
