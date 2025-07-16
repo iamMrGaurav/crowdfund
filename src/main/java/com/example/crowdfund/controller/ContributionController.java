@@ -3,11 +3,15 @@ package com.example.crowdfund.controller;
 import com.example.crowdfund.dto.request.ContributionRequest;
 import com.example.crowdfund.entity.Contribution;
 import com.example.crowdfund.entity.Payment;
+import com.example.crowdfund.enums.Currency;
+import com.example.crowdfund.enums.PaymentProvider;
 import com.example.crowdfund.enums.PaymentStatus;
 import com.example.crowdfund.repository.ContributionRepository;
 import com.example.crowdfund.repository.PaymentRepository;
+import com.example.crowdfund.service.payment.PaymentStrategy;
 import com.example.crowdfund.service.payment.StripeStrategy;
 import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,16 +27,19 @@ import java.util.Map;
 @Slf4j
 public class ContributionController {
 
-    private final StripeStrategy stripeStrategy;
+    private final PaymentStrategy stripeStrategy;
     private final ContributionRepository contributionRepository;
     private final PaymentRepository paymentRepository;
 
     @PostMapping("/checkout/stripe")
     public ResponseEntity<?> createCheckoutSession(@RequestBody ContributionRequest contributionRequest) {
         
+        Contribution contribution = null;
+        
         try {
-            Contribution contribution = getContribution(contributionRequest);
+            log.info("Processing Stripe Checkout session..." );
 
+            contribution = getContribution(contributionRequest);
             contribution = contributionRepository.save(contribution);
 
             String successUrl = "http://localhost:8080/v1/api/payment/success?session_id={CHECKOUT_SESSION_ID}";
@@ -49,6 +56,27 @@ public class ContributionController {
 
         } catch (StripeException e) {
             log.error("Stripe error creating checkout session", e);
+
+            // Save failure reason to database if contribution was created
+            if (contribution.getId() != null) {
+                try {
+                    contribution.setPaymentStatus(PaymentStatus.FAILED);
+                    contributionRepository.save(contribution);
+                    
+                    Payment payment = Payment.builder()
+                        .contributionId(contribution.getId())
+                        .amount(contribution.getAmount())
+                        .currency(Currency.valueOf(contribution.getCurrency()))
+                        .paymentProvider(PaymentProvider.STRIPE)
+                        .paymentStatus(PaymentStatus.FAILED)
+                        .failureReason("Stripe error: " + e.getMessage())
+                        .build();
+                    
+                    paymentRepository.save(payment);
+                } catch (Exception saveError) {
+                    log.error("Error saving failure reason", saveError);
+                }
+            }
 
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
@@ -74,19 +102,39 @@ public class ContributionController {
 
             Session session = Session.retrieve(session_id);
 
-            var contributionOpt = contributionRepository.findByPaymentIntentId(session_id);
+            // Find contribution by external payment ID (session ID) first
+            var paymentOpt = paymentRepository.findByExternalPaymentId(session_id);
+            
+            if (paymentOpt.isEmpty()) {
+                log.error("No payment found for session: {}", session_id);
+                return ResponseEntity.status(302)
+                        .header("Location", "http://localhost:8080/payment-error")
+                        .build();
+            }
+            
+            Payment payment = paymentOpt.get();
+            var contributionOpt = contributionRepository.findById(payment.getContributionId());
             
             if (contributionOpt.isPresent()) {
                 Contribution contribution = contributionOpt.get();
                 contribution.setPaymentStatus(PaymentStatus.SUCCESSFUL);
                 contributionRepository.save(contribution);
 
-                var paymentOpt = paymentRepository.findByExternalPaymentId(session_id);
-                if (paymentOpt.isPresent()) {
-                    Payment payment = paymentOpt.get();
-                    payment.setPaymentStatus(PaymentStatus.SUCCESSFUL);
-                    paymentRepository.save(payment);
+                payment.setPaymentStatus(PaymentStatus.SUCCESSFUL);
+                
+                // Enhanced: Update client secret if needed
+                if (payment.getPaymentIntentId() != null && payment.getClientSecret() == null) {
+                    try {
+                        PaymentIntent paymentIntent = PaymentIntent.retrieve(payment.getPaymentIntentId());
+                        if (paymentIntent.getClientSecret() != null) {
+                            payment.setClientSecret(paymentIntent.getClientSecret());
+                        }
+                    } catch (StripeException e) {
+                        log.warn("Could not retrieve PaymentIntent details: {}", e.getMessage());
+                    }
                 }
+                
+                paymentRepository.save(payment);
                 
                 log.info("Payment completed successfully for contribution: {}", contribution.getId());
             }
@@ -108,19 +156,26 @@ public class ContributionController {
         try {
             log.info("Handling payment cancel for session: {}", session_id);
 
-            var contributionOpt = contributionRepository.findByPaymentIntentId(session_id);
+            var paymentOpt = paymentRepository.findByExternalPaymentId(session_id);
+            
+            if (paymentOpt.isEmpty()) {
+                log.error("No payment found for session: {}", session_id);
+                return ResponseEntity.status(302)
+                        .header("Location", "http://localhost:8080/payment-error")
+                        .build();
+            }
+            
+            Payment payment = paymentOpt.get();
+            var contributionOpt = contributionRepository.findById(payment.getContributionId());
             
             if (contributionOpt.isPresent()) {
                 Contribution contribution = contributionOpt.get();
-                contribution.setPaymentStatus(PaymentStatus.FAILED);
+                contribution.setPaymentStatus(PaymentStatus.CANCELED);
                 contributionRepository.save(contribution);
 
-                var paymentOpt = paymentRepository.findByExternalPaymentId(session_id);
-                if (paymentOpt.isPresent()) {
-                    Payment payment = paymentOpt.get();
-                    payment.setPaymentStatus(PaymentStatus.FAILED);
-                    paymentRepository.save(payment);
-                }
+                payment.setPaymentStatus(PaymentStatus.CANCELED);
+                payment.setFailureReason("Payment cancelled by user");
+                paymentRepository.save(payment);
                 
                 log.info("Payment cancelled for contribution: {}", contribution.getId());
             }
