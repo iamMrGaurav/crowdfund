@@ -5,6 +5,7 @@ import com.example.crowdfund.dto.request.RegisterRequest;
 import com.example.crowdfund.entity.User;
 import com.example.crowdfund.service.authentication.AuthenticationService;
 import com.example.crowdfund.service.user.UserService;
+import com.stripe.exception.StripeException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,8 +42,7 @@ public class AuthController {
     }
 
     @PostMapping(value = "/register", consumes = {"application/json", "multipart/form-data"})
-    public ResponseEntity<?> registerUser(@ModelAttribute RegisterRequest registerRequest) throws IOException {
-
+    public ResponseEntity<?> registerUser(@ModelAttribute RegisterRequest registerRequest) throws IOException, StripeException {
         Map<String, Object> response = new HashMap<>();
         User user = userService.createUser(registerRequest);
 
