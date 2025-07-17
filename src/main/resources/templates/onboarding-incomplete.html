@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding Incomplete - Crowdfund</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        .warning-icon {
+            font-size: 60px;
+            color: #ffc107;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        .btn {
+            background: #ffc107;
+            color: #212529;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s;
+            margin: 10px;
+        }
+        .btn:hover {
+            background: #e0a800;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .requirements {
+            text-align: left;
+            margin: 30px 0;
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+        }
+        .requirements h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .requirements li {
+            margin: 10px 0;
+            color: #555;
+        }
+        .incomplete {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="warning-icon">⚠️</div>
+        <h1>Onboarding Incomplete</h1>
+        <p>Your Stripe account setup is not yet complete. Some information may be missing or under review.</p>
+        
+        <div class="requirements">
+            <h3>Common requirements:</h3>
+            <ul>
+                <li>Valid government-issued ID</li>
+                <li>Bank account information</li>
+                <li>Business details (if applicable)</li>
+                <li>Tax information (SSN/EIN)</li>
+                <li>Address verification</li>
+            </ul>
+        </div>
+        
+        <p>Please complete the onboarding process to start receiving payments. You may need to provide additional information or wait for verification.</p>
+        
+        <a href="/v1/api/payment/get-onboarding-link" class="btn btn-primary">Complete Onboarding</a>
+        <a href="/dashboard" class="btn">Go to Dashboard</a>
+    </div>
+</body>
+</html>

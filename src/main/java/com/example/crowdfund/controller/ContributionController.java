@@ -9,7 +9,6 @@ import com.example.crowdfund.enums.PaymentStatus;
 import com.example.crowdfund.repository.ContributionRepository;
 import com.example.crowdfund.repository.PaymentRepository;
 import com.example.crowdfund.service.payment.PaymentStrategy;
-import com.example.crowdfund.service.payment.StripeStrategy;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
@@ -33,7 +32,7 @@ public class ContributionController {
 
     @PostMapping("/checkout/stripe")
     public ResponseEntity<?> createCheckoutSession(@RequestBody ContributionRequest contributionRequest) {
-        
+
         Contribution contribution = null;
         
         try {
@@ -48,6 +47,7 @@ public class ContributionController {
             Session session = stripeStrategy.createCheckoutSession(contribution, successUrl, cancelUrl);
 
             Map<String, Object> response = new HashMap<>();
+
             response.put("success", true);
             response.put("checkoutUrl", session.getUrl());
             response.put("sessionId", session.getId());
