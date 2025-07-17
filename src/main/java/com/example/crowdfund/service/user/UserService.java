@@ -71,6 +71,16 @@ public class UserService {
         );
     }
 
+    public User findByStripeAccountId(String stripeAccountId) {
+        Optional<User> user = userRepository.findByStripeAccountId(stripeAccountId);
+        return user.orElse(null);
+    }
+
+    public User findById(Long id) {
+        Optional<User> user = userRepository.findById(id);
+        return user.orElse(null);
+    }
+
     public User save(User user) {
         return userRepository.save(user);
     }
