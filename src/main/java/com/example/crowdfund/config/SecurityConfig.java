@@ -88,7 +88,9 @@ public class SecurityConfig {
                         .requestMatchers("/v1/api/payment/**").permitAll() // Public payment endpoints
                         .requestMatchers("/payment-success").permitAll() // Payment success page
                         .requestMatchers("/payment-cancel").permitAll()  // Payment cancel page
-                        .requestMatchers("/payment-error").permitAll()   // Payment error page
+                        .requestMatchers("/payment-error").permitAll()
+                        .requestMatchers("/onboarding-success").permitAll()
+                        .requestMatchers("/onboarding-error").permitAll()
                         .anyRequest().authenticated()                 // Everything else requires authentication
                 )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
