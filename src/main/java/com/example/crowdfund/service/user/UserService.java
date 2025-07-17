@@ -6,9 +6,14 @@ import com.example.crowdfund.GloablExceptionHandler.ResourceAlreadyExistsExcepti
 import com.example.crowdfund.entity.User;
 import com.example.crowdfund.repository.UserRepository;
 import com.example.crowdfund.service.document.ImageService;
+import com.example.crowdfund.service.payment.PaymentStrategy;
+import com.example.crowdfund.service.payment.StripeStrategy;
+import com.stripe.exception.StripeException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,12 +27,14 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final StripeStrategy stripeStrategy;
+
 
     @Autowired
     private ImageService imageService;
 
     @Transactional
-    public User createUser(RegisterRequest request) throws IOException {
+    public User createUser(RegisterRequest request) throws IOException, StripeException {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new ResourceAlreadyExistsException("Username is already taken");
         }
@@ -50,6 +57,9 @@ public class UserService {
                 .bio(request.getBio())
                 .avatarUrl(avatarUrl)
                 .build();
+
+        String accountId = stripeStrategy.createStripeAccount(user.getEmail());
+        user.setStripeAccountId(accountId);
 
         return userRepository.save(user);
     }
@@ -85,5 +95,13 @@ public class UserService {
         }
 
         return userRepository.save(currentUser);
+    }
+
+    public User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

@@ -1,9 +1,7 @@
 package com.example.crowdfund.service.payment;
 
-
 import com.example.crowdfund.entity.Contribution;
 import com.example.crowdfund.entity.Payment;
-import com.example.crowdfund.entity.User;
 import com.example.crowdfund.enums.Currency;
 import com.example.crowdfund.enums.PaymentStatus;
 import com.example.crowdfund.enums.PaymentProvider;
@@ -117,14 +115,13 @@ public class StripeStrategy implements PaymentStrategy {
         return session;
     }
 
-
-    public String createStripeAccount(User user) throws StripeException {
-        log.info("Creating Stripe Connect account for user: {}", user.getId());
+    public String createStripeAccount(String email) throws StripeException {
+        log.info("Creating Stripe Connect account for user: {}", email);
         
         AccountCreateParams params = AccountCreateParams.builder()
                 .setType(AccountCreateParams.Type.EXPRESS)
-                .setCountry("US")
-                .setEmail(user.getEmail())
+                .setCountry("US") // TODO: MAKE THIS DYNAMIC
+                .setEmail(email)
                 .setCapabilities(
                         AccountCreateParams.Capabilities.builder()
                                 .setCardPayments(
@@ -143,7 +140,7 @@ public class StripeStrategy implements PaymentStrategy {
 
         Account account = Account.create(params);
         
-        log.info("Created Stripe Connect account: {} for user: {}", account.getId(), user.getId());
+        log.info("Created Stripe Connect account: {} for user email: {}", account.getId(), email);
         return account.getId();
     }
 
