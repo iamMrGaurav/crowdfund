@@ -7,8 +7,10 @@ import com.example.crowdfund.enums.PaymentStatus;
 import com.example.crowdfund.enums.PaymentProvider;
 import com.example.crowdfund.repository.ContributionRepository;
 import com.example.crowdfund.repository.PaymentRepository;
-import com.stripe.Stripe;
+import com.example.crowdfund.repository.UserRepository;
+import com.example.crowdfund.repository.CampaignRepository;
 import com.stripe.exception.StripeException;
+import com.stripe.exception.InvalidRequestException;
 import com.stripe.model.Account;
 import com.stripe.model.AccountLink;
 import com.stripe.model.checkout.Session;
@@ -17,11 +19,9 @@ import com.stripe.param.AccountCreateParams;
 import com.stripe.param.AccountLinkCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.stripe.param.PaymentIntentCreateParams;
-import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -32,19 +32,12 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class StripeStrategy implements PaymentStrategy {
 
-    @Value("${STRIPE_SECRET_KEY}")
-    private String stripeSecretKey;
-
     private final PaymentRepository paymentRepository;
     private final ContributionRepository contributionRepository;
-
-    @PostConstruct
-    public void init() {
-        Stripe.apiKey = stripeSecretKey;
-    }
+    private final UserRepository userRepository;
+    private final CampaignRepository campaignRepository;
 
     @Transactional
-    @Override
     public Session createCheckoutSession(Contribution contribution, String successUrl, String cancelUrl) throws StripeException {
         log.info("Creating Stripe Checkout session for contribution: {}", contribution.getId());
 
@@ -93,7 +86,7 @@ public class StripeStrategy implements PaymentStrategy {
 
         Session session = Session.create(params);
 
-        contribution.setPaymentIntentId(paymentIntent.getId());
+
         contribution.setPaymentStatus(PaymentStatus.PENDING);
         contribution.setPaymentProvider(PaymentProvider.STRIPE);
         contributionRepository.save(contribution);
@@ -105,14 +98,98 @@ public class StripeStrategy implements PaymentStrategy {
                 .paymentProvider(PaymentProvider.STRIPE)
                 .paymentStatus(PaymentStatus.PENDING)
                 .externalPaymentId(session.getId())
-                .paymentIntentId(paymentIntent.getId())
-                .clientSecret(paymentIntent.getClientSecret())
                 .build();
         
         paymentRepository.save(payment);
         
         log.info("Created Stripe Checkout session: {} for contribution: {}", session.getId(), contribution.getId());
         return session;
+    }
+
+    @Transactional
+    @Override
+    public Session createStripeCheckoutSessionDestinationCharges(Contribution contribution, String successUrl, String cancelUrl) throws StripeException {
+        log.info("Creating destination charge session for contribution: {}", contribution.getId());
+
+        Long campaignOwnerId = campaignRepository.findCreatorIdByCampaignId(contribution.getCampaignId());
+        if (campaignOwnerId == null) {
+            throw new InvalidRequestException("Campaign not found or has no owner", null, null, "400", null, null);
+        }
+
+        String campaignOwnerAccountId = userRepository.findStripeAccountIdByUserId(campaignOwnerId);
+        if (campaignOwnerAccountId == null) {
+            throw new InvalidRequestException("Campaign owner doesn't have a Stripe account", null, null, "400", null, null);
+        }
+        
+        long amountInCents = contribution.getAmount().multiply(new BigDecimal(100)).longValue();
+        long applicationFeeInCents = calculateApplicationFee(amountInCents);
+
+        SessionCreateParams sessionCreateParams = SessionCreateParams.builder()
+                .addLineItem(
+                        SessionCreateParams.LineItem.builder()
+                                .setPriceData(
+                                        SessionCreateParams.LineItem.PriceData.builder()
+                                                .setCurrency(contribution.getCurrency().toLowerCase())
+                                                .setProductData(
+                                                        SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                                                                .setName("Campaign Contribution")
+                                                                .setDescription("Contribution to campaign ID: " + contribution.getCampaignId())
+                                                                .build()
+                                                )
+                                                .setUnitAmount(amountInCents)
+                                                .build()
+                                )
+                                .setQuantity(1L)
+                                .build()
+                )
+                .setPaymentIntentData(
+                        SessionCreateParams.PaymentIntentData.builder()
+                                .setApplicationFeeAmount(applicationFeeInCents)
+                                .setTransferData(
+                                        SessionCreateParams.PaymentIntentData.TransferData.builder()
+                                                .setDestination(campaignOwnerAccountId)
+                                                .build()
+                                )
+                                .build()
+                )
+                .setMode(SessionCreateParams.Mode.PAYMENT)
+                .setSuccessUrl(successUrl)
+                .setCancelUrl(cancelUrl)
+                .putMetadata("contribution_id", contribution.getId().toString())
+                .putMetadata("campaign_id", contribution.getCampaignId().toString())
+                .putMetadata("campaign_owner_account", campaignOwnerAccountId)
+                .putMetadata("platform_fee", String.valueOf(applicationFeeInCents))
+                .build();
+
+        Session session = Session.create(sessionCreateParams);
+        contribution.setPaymentStatus(PaymentStatus.PENDING);
+        contribution.setPaymentProvider(PaymentProvider.STRIPE);
+
+
+        Payment payment = Payment.builder()
+                .contributionId(contribution.getId())
+                .amount(contribution.getAmount())
+                .currency(Currency.valueOf(contribution.getCurrency()))
+                .paymentProvider(PaymentProvider.STRIPE)
+                .paymentStatus(PaymentStatus.PENDING)
+                .externalPaymentId(session.getId())
+                .build();
+
+        if(contribution.getIsAnonymous()){
+            contribution.setUserId(null);
+        }
+
+        contributionRepository.save(contribution);
+        paymentRepository.save(payment);
+        
+        log.info("Created destination charge session: {} for contribution: {}, platform fee: {}", 
+                session.getId(), contribution.getId(), applicationFeeInCents);
+
+        return session;
+    }
+
+    private long calculateApplicationFee(long amountInCents) {
+        return Math.round(amountInCents * 0.03);
     }
 
     public String createStripeAccount(String email) throws StripeException {

@@ -7,5 +7,5 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface PaymentStrategy {
-    Session createCheckoutSession(Contribution contribution, String successUrl, String cancelUrl) throws StripeException;
+    Session createStripeCheckoutSessionDestinationCharges(Contribution contribution, String successUrl, String cancelUrl) throws StripeException;
 }

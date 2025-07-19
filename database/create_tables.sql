@@ -120,7 +120,6 @@ CREATE TABLE payments (
     currency VARCHAR(10) NOT NULL,
     amount DECIMAL(38,2) NOT NULL,
     payment_intent_id VARCHAR(255) UNIQUE,
-    client_secret VARCHAR(255),
     failure_reason TEXT,
     payment_method_id VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

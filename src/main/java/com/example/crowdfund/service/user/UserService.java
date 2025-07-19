@@ -6,7 +6,6 @@ import com.example.crowdfund.GloablExceptionHandler.ResourceAlreadyExistsExcepti
 import com.example.crowdfund.entity.User;
 import com.example.crowdfund.repository.UserRepository;
 import com.example.crowdfund.service.document.ImageService;
-import com.example.crowdfund.service.payment.PaymentStrategy;
 import com.example.crowdfund.service.payment.StripeStrategy;
 import com.stripe.exception.StripeException;
 import jakarta.transaction.Transactional;

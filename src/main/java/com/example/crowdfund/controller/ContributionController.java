@@ -30,11 +30,12 @@ public class ContributionController {
     private final ContributionRepository contributionRepository;
     private final PaymentRepository paymentRepository;
 
+
     @PostMapping("/checkout/stripe")
     public ResponseEntity<?> createCheckoutSession(@RequestBody ContributionRequest contributionRequest) {
 
         Contribution contribution = null;
-        
+
         try {
             log.info("Processing Stripe Checkout session..." );
 
@@ -44,7 +45,7 @@ public class ContributionController {
             String successUrl = "http://localhost:8080/v1/api/payment/success?session_id={CHECKOUT_SESSION_ID}";
             String cancelUrl = "http://localhost:8080/v1/api/payment/cancel?session_id={CHECKOUT_SESSION_ID}";
 
-            Session session = stripeStrategy.createCheckoutSession(contribution, successUrl, cancelUrl);
+            Session session = stripeStrategy.createStripeCheckoutSessionDestinationCharges(contribution, successUrl, cancelUrl);
 
             Map<String, Object> response = new HashMap<>();
 
@@ -119,17 +120,6 @@ public class ContributionController {
                 contributionRepository.save(contribution);
 
                 payment.setPaymentStatus(PaymentStatus.SUCCESSFUL);
-
-                if (payment.getPaymentIntentId() != null && payment.getClientSecret() == null) {
-                    try {
-                        PaymentIntent paymentIntent = PaymentIntent.retrieve(payment.getPaymentIntentId());
-                        if (paymentIntent.getClientSecret() != null) {
-                            payment.setClientSecret(paymentIntent.getClientSecret());
-                        }
-                    } catch (StripeException e) {
-                        log.warn("Could not retrieve PaymentIntent details: {}", e.getMessage());
-                    }
-                }
                 
                 paymentRepository.save(payment);
                 
@@ -153,6 +143,7 @@ public class ContributionController {
         try {
             log.info("Handling payment cancel for session: {}", session_id);
 
+            Session session = Session.retrieve(session_id);
             var paymentOpt = paymentRepository.findByExternalPaymentId(session_id);
             
             if (paymentOpt.isEmpty()) {
