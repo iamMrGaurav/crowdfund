@@ -1,20 +1,22 @@
 package com.example.crowdfund.controller;
 
 import com.example.crowdfund.dto.request.ContributionRequest;
+import com.example.crowdfund.dto.response.PaymentNotificationResponse;
 import com.example.crowdfund.entity.Contribution;
 import com.example.crowdfund.entity.Payment;
 import com.example.crowdfund.enums.Currency;
 import com.example.crowdfund.enums.PaymentProvider;
 import com.example.crowdfund.enums.PaymentStatus;
+import com.example.crowdfund.repository.CampaignRepository;
 import com.example.crowdfund.repository.ContributionRepository;
 import com.example.crowdfund.repository.PaymentRepository;
 import com.example.crowdfund.service.payment.PaymentStrategy;
 import com.stripe.exception.StripeException;
-import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -29,6 +31,10 @@ public class ContributionController {
     private final PaymentStrategy stripeStrategy;
     private final ContributionRepository contributionRepository;
     private final PaymentRepository paymentRepository;
+    private final CampaignRepository campaignRepository;
+
+
+    private KafkaTemplate<Long, PaymentNotificationResponse> kafkaTemplate;
 
 
     @PostMapping("/checkout/stripe")
@@ -120,7 +126,17 @@ public class ContributionController {
                 contributionRepository.save(contribution);
 
                 payment.setPaymentStatus(PaymentStatus.SUCCESSFUL);
-                
+
+                Long campaignOwnerId = campaignRepository.findCreatorIdByCampaignId(contribution.getCampaignId());
+                PaymentNotificationResponse paymentNotificationResponse = new PaymentNotificationResponse(
+                        contribution.getDisplayName(),
+                        contribution.getAmount(),
+                        contribution.getMessage(),
+                        campaignOwnerId
+                );
+
+
+                kafkaTemplate.send("payment-notification", paymentNotificationResponse);
                 paymentRepository.save(payment);
                 
                 log.info("Payment completed successfully for contribution: {}", contribution.getId());
