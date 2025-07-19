@@ -47,11 +47,7 @@ public class Payment {
     @Column(nullable = false)
     private BigDecimal amount;
 
-    @Column(name = "payment_intent_id", unique = true)
-    private String paymentIntentId;
 
-    @Column(name = "client_secret")
-    private String clientSecret;
 
     @Column(name = "failure_reason")
     private String failureReason;

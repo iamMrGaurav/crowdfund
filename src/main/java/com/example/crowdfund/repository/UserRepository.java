@@ -2,6 +2,8 @@ package com.example.crowdfund.repository;
 
 import com.example.crowdfund.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -13,6 +15,8 @@ public interface UserRepository extends JpaRepository<User, Long>{ // Long is Pr
     Optional<User> findByStripeAccountId(String stripeAccountId);
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
+    @Query("SELECT u.stripeAccountId FROM User u WHERE u.id = :userId")
+    String findStripeAccountIdByUserId(@Param("userId") Long userId);
 }
 
 /*

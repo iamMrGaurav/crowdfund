@@ -48,8 +48,6 @@ public class Contribution {
     @Column(name = "payment_status", nullable = false)
     private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
-    @Column(name = "payment_intent_id", unique = true)
-    private String paymentIntentId;
 
     @Column(length = 3)
     private String currency;
