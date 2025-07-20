@@ -40,7 +40,6 @@ public class StripeController {
     private final UserService userService;
     @Autowired(required = false)
     private KafkaTemplate<Long, PaymentNotificationResponse> kafkaTemplate;
-
     @PostMapping("/checkout/stripe")
     public ResponseEntity<?> createCheckoutSession(@RequestBody ContributionRequest contributionRequest) {
 
