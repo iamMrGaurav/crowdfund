@@ -1,4 +1,4 @@
-package com.example.crowdfund.config;
+package com.example.crowdfund.config.middlewareConfig;
 
 import com.example.crowdfund.service.authentication.JwtService;
 import jakarta.servlet.FilterChain;
