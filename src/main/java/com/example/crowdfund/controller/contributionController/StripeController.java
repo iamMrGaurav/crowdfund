@@ -2,6 +2,7 @@ package com.example.crowdfund.controller.contributionController;
 
 import com.example.crowdfund.dto.request.ContributionRequest;
 import com.example.crowdfund.dto.response.PaymentNotificationResponse;
+import com.example.crowdfund.entity.Campaign;
 import com.example.crowdfund.entity.Contribution;
 import com.example.crowdfund.entity.Payment;
 import com.example.crowdfund.entity.User;
@@ -11,7 +12,6 @@ import com.example.crowdfund.enums.PaymentStatus;
 import com.example.crowdfund.repository.CampaignRepository;
 import com.example.crowdfund.repository.ContributionRepository;
 import com.example.crowdfund.repository.PaymentRepository;
-import com.example.crowdfund.service.payment.PaymentStrategy;
 import com.example.crowdfund.service.payment.StripeStrategy;
 import com.example.crowdfund.service.user.UserService;
 import com.stripe.exception.StripeException;
@@ -38,8 +38,10 @@ public class StripeController {
     private final PaymentRepository paymentRepository;
     private final CampaignRepository campaignRepository;
     private final UserService userService;
+
     @Autowired(required = false)
     private KafkaTemplate<Long, PaymentNotificationResponse> kafkaTemplate;
+
     @PostMapping("/checkout/stripe")
     public ResponseEntity<?> createCheckoutSession(@RequestBody ContributionRequest contributionRequest) {
 
@@ -131,13 +133,16 @@ public class StripeController {
                 payment.setPaymentStatus(PaymentStatus.SUCCESSFUL);
 
                 Long campaignOwnerId = campaignRepository.findCreatorIdByCampaignId(contribution.getCampaignId());
+                Campaign campaign = campaignRepository.findByCampaignId(campaignOwnerId);
+                campaign.setCurrentAmount(campaign.getCurrentAmount().add(payment.getAmount()));
+                campaignRepository.save(campaign);
+
                 PaymentNotificationResponse paymentNotificationResponse = new PaymentNotificationResponse(
                         contribution.getDisplayName(),
                         contribution.getAmount(),
                         contribution.getMessage(),
                         campaignOwnerId
                 );
-
 
                 if (kafkaTemplate != null) {
                     kafkaTemplate.send("payment-notification", campaignOwnerId, paymentNotificationResponse);

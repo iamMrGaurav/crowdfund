@@ -47,8 +47,6 @@ public class Payment {
     @Column(nullable = false)
     private BigDecimal amount;
 
-
-
     @Column(name = "failure_reason")
     private String failureReason;
 
