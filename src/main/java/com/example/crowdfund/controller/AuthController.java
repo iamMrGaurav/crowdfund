@@ -2,15 +2,19 @@ package com.example.crowdfund.controller;
 
 import com.example.crowdfund.dto.request.LoginRequest;
 import com.example.crowdfund.dto.request.RegisterRequest;
+import com.example.crowdfund.dto.response.PaymentNotificationResponse;
 import com.example.crowdfund.entity.User;
 import com.example.crowdfund.service.authentication.AuthenticationService;
 import com.example.crowdfund.service.user.UserService;
 import com.stripe.exception.StripeException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +25,8 @@ public class AuthController {
 
     private final AuthenticationService authenticationService;
     private final UserService userService;
+
+
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {

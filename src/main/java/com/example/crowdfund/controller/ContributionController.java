@@ -15,6 +15,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -32,9 +33,9 @@ public class ContributionController {
     private final ContributionRepository contributionRepository;
     private final PaymentRepository paymentRepository;
     private final CampaignRepository campaignRepository;
-
-
+    @Autowired(required = false)
     private KafkaTemplate<Long, PaymentNotificationResponse> kafkaTemplate;
+
 
 
     @PostMapping("/checkout/stripe")
@@ -136,7 +137,12 @@ public class ContributionController {
                 );
 
 
-                kafkaTemplate.send("payment-notification", paymentNotificationResponse);
+                if (kafkaTemplate != null) {
+                    kafkaTemplate.send("payment-notification", campaignOwnerId, paymentNotificationResponse);
+                } else {
+                    log.info("Kafka not available, skipping notification");
+                }
+
                 paymentRepository.save(payment);
                 
                 log.info("Payment completed successfully for contribution: {}", contribution.getId());
