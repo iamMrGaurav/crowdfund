@@ -1,4 +1,4 @@
-package com.example.crowdfund.config;
+package com.example.crowdfund.config.kafkaConfig;
 
 
 import org.apache.kafka.clients.producer.ProducerConfig;

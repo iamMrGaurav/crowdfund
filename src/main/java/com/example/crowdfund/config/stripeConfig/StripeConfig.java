@@ -1,4 +1,4 @@
-package com.example.crowdfund.config;
+package com.example.crowdfund.config.stripeConfig;
 
 import com.stripe.Stripe;
 import jakarta.annotation.PostConstruct;

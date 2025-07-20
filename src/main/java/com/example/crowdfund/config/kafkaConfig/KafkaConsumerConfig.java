@@ -1,4 +1,4 @@
-package com.example.crowdfund.config;
+package com.example.crowdfund.config.kafkaConfig;
 
 import com.example.crowdfund.dto.response.PaymentNotificationResponse;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
