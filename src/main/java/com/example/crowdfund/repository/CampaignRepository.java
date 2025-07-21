@@ -18,7 +18,6 @@ public interface CampaignRepository extends JpaRepository<Campaign, Long> {
     Optional<Campaign> findByTitle(String title);
     List<Campaign> findByCreator(User creator);
     List<Campaign> findByStatus(CampaignStatus status);
-    Campaign findByCampaignId(Long campaignId);
     
     @Query("SELECT c.creator.id FROM Campaign c WHERE c.id = :campaignId")
     Long findCreatorIdByCampaignId(@Param("campaignId") Long campaignId);

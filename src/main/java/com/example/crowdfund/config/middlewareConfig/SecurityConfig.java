@@ -91,6 +91,7 @@ public class SecurityConfig {
                         .requestMatchers("/payment-error").permitAll()
                         .requestMatchers("/onboarding-success").permitAll()
                         .requestMatchers("/onboarding-error").permitAll()
+                        .requestMatchers("/ws/**").permitAll()        // WebSocket endpoints
                         .anyRequest().authenticated()                 // Everything else requires authentication
                 )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
