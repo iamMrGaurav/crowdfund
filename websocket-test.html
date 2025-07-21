@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crowdfund - Real-time Notifications Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #4CAF50;
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        .connection-status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .test-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .campaign-setup {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .campaign-setup h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .btn {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #45a049;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .notifications-feed {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .notification-item.owner {
+            border-left-color: #ff9800;
+            background: #fff8e1;
+        }
+
+        .notification-header {
+            font-weight: bold;
+            color: #2e7d32;
+            margin-bottom: 5px;
+        }
+
+        .notification-amount {
+            font-size: 1.2em;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .notification-message {
+            font-style: italic;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .notification-time {
+            font-size: 0.8em;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .debug-log {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Crowdfund Real-time Notifications</h1>
+            <p>Test WebSocket + Kafka integration for campaign contributions</p>
+        </div>
+
+        <div id="connection-status" class="connection-status disconnected">
+            🔴 Disconnected - Connecting to WebSocket...
+        </div>
+
+        <div class="test-section">
+            <div class="campaign-setup">
+                <h3>📋 Test Configuration</h3>
+                <div class="form-group">
+                    <label for="campaignId">Campaign ID:</label>
+                    <input type="number" id="campaignId" value="1" placeholder="Enter campaign ID">
+                </div>
+                <div class="form-group">
+                    <label for="userId">User ID (if owner):</label>
+                    <input type="number" id="userId" value="1" placeholder="Enter your user ID">
+                </div>
+                <div class="form-group">
+                    <label for="viewMode">View Mode:</label>
+                    <select id="viewMode">
+                        <option value="viewer">Campaign Viewer</option>
+                        <option value="owner">Campaign Owner</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="subscribeToUpdates()" id="subscribeBtn" disabled>
+                    🔔 Subscribe to Notifications
+                </button>
+                <button class="btn" onclick="clearNotifications()" style="background: #f44336; margin-left: 10px;">
+                    🗑️ Clear
+                </button>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalNotifications">0</div>
+                    <div>Total Notifications</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalAmount">$0</div>
+                    <div>Total Contributions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="connectedTime">0s</div>
+                    <div>Connected Time</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="notifications-feed">
+            <h3>📢 Live Notifications Feed</h3>
+            <div id="notifications-list">
+                <p style="color: #999; text-align: center;">No notifications yet. Make a payment to see live updates!</p>
+            </div>
+        </div>
+
+        <div class="debug-log" id="debug-log">
+            <div><strong>Debug Console:</strong></div>
+            <div>Initializing WebSocket connection...</div>
+        </div>
+    </div>
+
+    <script>
+        let stompClient = null;
+        let isConnected = false;
+        let subscriptions = [];
+        let notificationCount = 0;
+        let totalAmount = 0;
+        let connectionStartTime = null;
+
+        // Connect to WebSocket
+        function connectWebSocket() {
+            debugLog('🔌 Connecting to WebSocket at ws://localhost:8080/ws...');
+            
+            const socket = new SockJS('http://localhost:8080/ws');
+            stompClient = Stomp.over(socket);
+            
+            // Disable console logging from STOMP
+            stompClient.debug = null;
+
+            stompClient.connect({}, function (frame) {
+                isConnected = true;
+                connectionStartTime = Date.now();
+                updateConnectionStatus(true);
+                debugLog('✅ Connected to WebSocket: ' + frame);
+                
+                document.getElementById('subscribeBtn').disabled = false;
+                
+                // Auto-subscribe if campaign ID is set
+                subscribeToUpdates();
+                
+            }, function (error) {
+                isConnected = false;
+                updateConnectionStatus(false);
+                debugLog('❌ WebSocket connection error: ' + error);
+                
+                // Retry connection after 3 seconds
+                setTimeout(connectWebSocket, 3000);
+            });
+        }
+
+        function subscribeToUpdates() {
+            if (!isConnected) {
+                debugLog('❌ Cannot subscribe - not connected to WebSocket');
+                return;
+            }
+
+            // Unsubscribe from previous subscriptions
+            subscriptions.forEach(sub => sub.unsubscribe());
+            subscriptions = [];
+
+            const campaignId = document.getElementById('campaignId').value;
+            const userId = document.getElementById('userId').value;
+            const viewMode = document.getElementById('viewMode').value;
+
+            debugLog(`📡 Subscribing to campaign ${campaignId} notifications...`);
+
+            // Subscribe to campaign-wide contributions
+            const campaignSub = stompClient.subscribe(`/topic/campaign/${campaignId}/contributions/`, function (message) {
+                const contribution = JSON.parse(message.body);
+                debugLog('📨 Received campaign contribution: ' + JSON.stringify(contribution));
+                displayNotification(contribution, false);
+            });
+            subscriptions.push(campaignSub);
+
+            // If owner mode, also subscribe to owner-specific notifications
+            if (viewMode === 'owner') {
+                debugLog(`👑 Subscribing to owner notifications for user ${userId}...`);
+                const ownerSub = stompClient.subscribe(`/topic/campaign/contributions/user/${userId}`, function (message) {
+                    const notification = JSON.parse(message.body);
+                    debugLog('👑 Received owner notification: ' + JSON.stringify(notification));
+                    displayNotification(notification, true);
+                });
+                subscriptions.push(ownerSub);
+            }
+
+            debugLog(`✅ Subscribed to ${subscriptions.length} notification topics`);
+        }
+
+        function displayNotification(contribution, isOwnerNotification) {
+            notificationCount++;
+            totalAmount += parseFloat(contribution.amount);
+
+            const notificationsList = document.getElementById('notifications-list');
+            
+            // Remove "no notifications" message
+            if (notificationCount === 1) {
+                notificationsList.innerHTML = '';
+            }
+
+            const notificationItem = document.createElement('div');
+            notificationItem.className = 'notification-item' + (isOwnerNotification ? ' owner' : '');
+            
+            notificationItem.innerHTML = `
+                <div class="notification-header">
+                    ${isOwnerNotification ? '👑 Owner Alert: ' : '🎉 New Contribution: '}
+                    ${contribution.donorName || 'Anonymous'}
+                </div>
+                <div class="notification-amount">$${contribution.amount}</div>
+                <div class="notification-message">${contribution.message || 'No message'}</div>
+                <div class="notification-time">${new Date().toLocaleTimeString()}</div>
+                <div style="font-size: 0.8em; color: #999; margin-top: 5px;">
+                    Campaign: ${contribution.campaignId} | Contribution: ${contribution.contributionId}
+                </div>
+            `;
+
+            notificationsList.insertBefore(notificationItem, notificationsList.firstChild);
+
+            // Update stats
+            document.getElementById('totalNotifications').textContent = notificationCount;
+            document.getElementById('totalAmount').textContent = `$${totalAmount.toFixed(2)}`;
+            
+            // Keep only last 10 notifications
+            while (notificationsList.children.length > 10) {
+                notificationsList.removeChild(notificationsList.lastChild);
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusElement = document.getElementById('connection-status');
+            if (connected) {
+                statusElement.className = 'connection-status connected';
+                statusElement.innerHTML = '🟢 Connected to WebSocket - Ready to receive notifications';
+            } else {
+                statusElement.className = 'connection-status disconnected';
+                statusElement.innerHTML = '🔴 Disconnected - Attempting to reconnect...';
+            }
+        }
+
+        function clearNotifications() {
+            document.getElementById('notifications-list').innerHTML = 
+                '<p style="color: #999; text-align: center;">No notifications yet. Make a payment to see live updates!</p>';
+            notificationCount = 0;
+            totalAmount = 0;
+            document.getElementById('totalNotifications').textContent = '0';
+            document.getElementById('totalAmount').textContent = '$0';
+            debugLog('🗑️ Notifications cleared');
+        }
+
+        function debugLog(message) {
+            const debugElement = document.getElementById('debug-log');
+            const timestamp = new Date().toLocaleTimeString();
+            debugElement.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            debugElement.scrollTop = debugElement.scrollHeight;
+        }
+
+        // Update connected time counter
+        function updateConnectedTime() {
+            if (connectionStartTime) {
+                const seconds = Math.floor((Date.now() - connectionStartTime) / 1000);
+                document.getElementById('connectedTime').textContent = seconds + 's';
+            }
+        }
+
+        // Initialize
+        window.onload = function() {
+            connectWebSocket();
+            setInterval(updateConnectedTime, 1000);
+        };
+
+        // Handle page visibility change
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && !isConnected) {
+                debugLog('🔄 Page became visible, reconnecting...');
+                connectWebSocket();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -133,7 +133,7 @@ public class StripeController {
                 payment.setPaymentStatus(PaymentStatus.SUCCESSFUL);
 
                 Long campaignOwnerId = campaignRepository.findCreatorIdByCampaignId(contribution.getCampaignId());
-                Campaign campaign = campaignRepository.findByCampaignId(campaignOwnerId);
+                Campaign campaign = campaignRepository.findById(contribution.getCampaignId()).orElseThrow();
                 campaign.setCurrentAmount(campaign.getCurrentAmount().add(payment.getAmount()));
                 campaignRepository.save(campaign);
 
@@ -141,7 +141,9 @@ public class StripeController {
                         contribution.getDisplayName(),
                         contribution.getAmount(),
                         contribution.getMessage(),
-                        campaignOwnerId
+                        campaignOwnerId,
+                        contribution.getId(),
+                        contribution.getCampaignId()
                 );
 
                 if (kafkaTemplate != null) {
@@ -160,7 +162,7 @@ public class StripeController {
                     .build();
                     
         } catch (Exception e) {
-            log.error("Error handling payment success", e);
+            log.error("Error handling payment success: {}", e.getMessage());
             return ResponseEntity.status(302)
                     .header("Location", "http://localhost:8080/payment-error")
                     .build();

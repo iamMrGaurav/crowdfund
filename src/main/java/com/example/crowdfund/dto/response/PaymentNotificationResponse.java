@@ -15,4 +15,6 @@ public class PaymentNotificationResponse {
     BigDecimal amount;
     String message;
     Long campaignOwnerId;
+    Long contributionId;
+    Long campaignId;
 }
