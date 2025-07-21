@@ -35,6 +35,18 @@ public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
     private final CorsConfigurationSource corsConfigurationSource;
 
+    private final String[] publicURLs = new String[] {
+            "/v1/api/auth/**",
+            "/v1/api/public/**",
+            "/v1/api/payment/**",
+            "/payment-success",
+            "/payment-cancel",
+            "/payment-error",
+            "/ws/**",
+            "/onboarding-error",
+            "/onboarding-success",
+    };
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -83,15 +95,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/v1/api/auth/**").permitAll()  // Public auth endpoints
-                        .requestMatchers("/v1/api/public/**").permitAll() // Public API endpoints
-                        .requestMatchers("/v1/api/payment/**").permitAll() // Public payment endpoints
-                        .requestMatchers("/payment-success").permitAll() // Payment success page
-                        .requestMatchers("/payment-cancel").permitAll()  // Payment cancel page
-                        .requestMatchers("/payment-error").permitAll()
-                        .requestMatchers("/onboarding-success").permitAll()
-                        .requestMatchers("/onboarding-error").permitAll()
-                        .requestMatchers("/ws/**").permitAll()        // WebSocket endpoints
+                        .requestMatchers(publicURLs).permitAll()
                         .anyRequest().authenticated()                 // Everything else requires authentication
                 )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
