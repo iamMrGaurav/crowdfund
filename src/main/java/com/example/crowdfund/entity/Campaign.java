@@ -2,6 +2,8 @@ package com.example.crowdfund.entity;
 
 import com.example.crowdfund.enums.CampaignStatus;
 import com.example.crowdfund.enums.Currency;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,13 +21,14 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Campaign {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = true)  // Allow null for drafts
+    @Column(nullable = true)
     private String title;
 
     @Column(name = "short_description")
@@ -34,13 +37,13 @@ public class Campaign {
     @Column(name = "full_description")
     private String fullDescription;
 
-    @Column(name = "funding_goal", nullable = true, precision = 38, scale = 2)  // Allow null for drafts
+    @Column(name = "funding_goal", nullable = true, precision = 38, scale = 2)
     private BigDecimal fundingGoal;
 
     @Column(name = "current_amount", precision = 38, scale = 2)
     private BigDecimal currentAmount = BigDecimal.ZERO;
 
-    @Column(nullable = true)  // Allow null for drafts
+    @Column(nullable = true)
     private LocalDateTime deadline;
 
     @Enumerated(EnumType.STRING)
@@ -53,10 +56,12 @@ public class Campaign {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
+    @JsonIgnore
     private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
+    @JsonIgnore
     private User creator;
 
     @ElementCollection

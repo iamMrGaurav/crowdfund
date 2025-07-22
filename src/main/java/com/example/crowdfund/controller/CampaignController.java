@@ -86,4 +86,9 @@ public class CampaignController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping(value = "/")
+    public ResponseEntity<?> getCampaigns(@RequestParam int pageNumber, @RequestParam int pageSize, @RequestParam String sortBy){
+       return ResponseEntity.ok(campaignService.getCampaigns(pageNumber, pageSize, sortBy));
+    }
 }
