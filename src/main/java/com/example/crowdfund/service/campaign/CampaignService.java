@@ -12,6 +12,10 @@ import com.example.crowdfund.service.category.CategoryService;
 import com.example.crowdfund.service.document.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -115,14 +119,11 @@ public class CampaignService {
         if (campaign.getStatus() != CampaignStatus.DRAFT) {
             throw new BadRequestException("Only draft campaigns can be submitted for review");
         }
-        
-        // Update with fresh data from request
+
         updateCampaignFromRequest(campaign, request);
-        
-        // Validate complete campaign before submission
         validateForSubmission(campaign);
 
-        campaign.setStatus(CampaignStatus.PENDING);
+        campaign.setStatus(CampaignStatus.ACTIVE);
         
         return campaignRepository.save(campaign);
     }
@@ -130,10 +131,8 @@ public class CampaignService {
     public Campaign createCampaign(CampaignRequest campaignRequest, User creator) throws IOException {
         Campaign campaign = new Campaign();
 
-        // Set creator first
         campaign.setCreator(creator);
-        
-        // Update with fresh data from request
+
         updateCampaignFromRequest(campaign, campaignRequest);
 
         if (campaignRequest.getImages() != null && campaignRequest.getImages().length > 0) {
@@ -148,7 +147,7 @@ public class CampaignService {
         validateForSubmission(campaign);
 
         // Set status to PENDING (direct submission)
-        campaign.setStatus(CampaignStatus.PENDING);
+        campaign.setStatus(CampaignStatus.ACTIVE);
 
         return campaignRepository.save(campaign);
     }
@@ -211,6 +210,12 @@ public class CampaignService {
         if (!errors.isEmpty()) {
             throw new BadRequestException("Validation failed: " + String.join(", ", errors));
         }
+    }
+
+
+    public Page<Campaign> getCampaigns(int pageNumber, int pageSize, String sortBy){
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(sortBy));
+        return campaignRepository.findByStatus(CampaignStatus.ACTIVE, pageable);
     }
 
     private boolean isBlank(String str) {
