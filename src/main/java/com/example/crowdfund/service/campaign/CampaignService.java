@@ -9,7 +9,7 @@ import com.example.crowdfund.entity.User;
 import com.example.crowdfund.enums.CampaignStatus;
 import com.example.crowdfund.repository.CampaignRepository;
 import com.example.crowdfund.service.category.CategoryService;
-import com.example.crowdfund.service.document.ImageService;
+import com.example.crowdfund.service.aws.ImageService;
 import com.example.crowdfund.service.aws.S3BucketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
