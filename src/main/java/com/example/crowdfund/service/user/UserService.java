@@ -5,7 +5,8 @@ import com.example.crowdfund.dto.request.RegisterRequest;
 import com.example.crowdfund.GloablExceptionHandler.ResourceAlreadyExistsException;
 import com.example.crowdfund.entity.User;
 import com.example.crowdfund.repository.UserRepository;
-import com.example.crowdfund.service.document.ImageService;
+import com.example.crowdfund.service.aws.S3BucketService;
+import com.example.crowdfund.service.aws.ImageService;
 import com.example.crowdfund.service.payment.StripeStrategy;
 import com.stripe.exception.StripeException;
 import jakarta.transaction.Transactional;
@@ -32,6 +33,9 @@ public class UserService {
     @Autowired
     private ImageService imageService;
 
+    @Autowired
+    private S3BucketService s3BucketService;
+
     @Transactional
     public User createUser(RegisterRequest request) throws IOException, StripeException {
         if (userRepository.existsByUsername(request.getUsername())) {
@@ -44,7 +48,7 @@ public class UserService {
 
         String avatarUrl = null;
         if (request.getAvatar() != null && !request.getAvatar().isEmpty()) {
-            avatarUrl = imageService.uploadAvatar(request.getAvatar());
+            avatarUrl = imageService.uploadAvatar(request.getAvatar(), request.getEmail());
         }
 
         User user = User.builder()
@@ -97,7 +101,11 @@ public class UserService {
         }
 
         if (request.getAvatar() != null && !request.getAvatar().isEmpty()) {
-            String avatarUrl = imageService.uploadAvatar(request.getAvatar());
+            if (currentUser.getAvatarUrl() != null && !currentUser.getAvatarUrl().isEmpty()) {
+                s3BucketService.deleteFile(currentUser.getAvatarUrl());
+            }
+            
+            String avatarUrl = imageService.uploadAvatar(request.getAvatar(), currentUser.getEmail());
             if (avatarUrl != null) {
                 currentUser.setAvatarUrl(avatarUrl);
             }

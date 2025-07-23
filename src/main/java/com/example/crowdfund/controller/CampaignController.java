@@ -88,7 +88,12 @@ public class CampaignController {
     }
 
     @GetMapping(value = "/")
-    public ResponseEntity<?> getCampaigns(@RequestParam int pageNumber, @RequestParam int pageSize, @RequestParam String sortBy){
-       return ResponseEntity.ok(campaignService.getCampaigns(pageNumber, pageSize, sortBy));
+    public ResponseEntity<?> getCampaigns(@RequestParam int pageNumber, @RequestParam int pageSize, @RequestParam String sortBy, @RequestParam(required = false) Long categoryId){
+       return ResponseEntity.ok(campaignService.getCampaigns(pageNumber, pageSize, sortBy, categoryId));
+    }
+
+    @GetMapping(value = "/user")
+    public ResponseEntity<?> getUserCampaign(@RequestParam int pageNumber, @RequestParam int pageSize, @RequestParam String sortBy, @RequestParam Long userId){
+        return  ResponseEntity.ok(campaignService.getCampaignsByUserId(pageNumber, pageSize, sortBy, userId));
     }
 }
