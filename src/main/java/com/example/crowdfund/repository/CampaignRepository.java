@@ -20,6 +20,10 @@ public interface CampaignRepository extends JpaRepository<Campaign, Long> {
     Optional<Campaign> findByTitle(String title);
     List<Campaign> findByCreator(User creator);
     Page<Campaign> findByStatus(CampaignStatus status, Pageable pageable);
+
+    Page<Campaign> findByStatusAndCategoryId(CampaignStatus status, Long categoryId, Pageable pageable );
+
+    Page<Campaign> findByCreatorId(Long creatorId, Pageable pageable);
     
     @Query("SELECT c.creator.id FROM Campaign c WHERE c.id = :campaignId")
     Long findCreatorIdByCampaignId(@Param("campaignId") Long campaignId);

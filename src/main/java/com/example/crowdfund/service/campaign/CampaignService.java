@@ -10,6 +10,7 @@ import com.example.crowdfund.enums.CampaignStatus;
 import com.example.crowdfund.repository.CampaignRepository;
 import com.example.crowdfund.service.category.CategoryService;
 import com.example.crowdfund.service.document.ImageService;
+import com.example.crowdfund.service.aws.S3BucketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +37,9 @@ public class CampaignService {
 
     @Autowired
     private ImageService imageService;
+
+    @Autowired
+    private S3BucketService s3BucketService;
 
     public Campaign saveDraft(CampaignRequest campaignRequest, User creator, MultipartFile[] images) throws IOException {
         Campaign campaign = new Campaign();
@@ -50,7 +55,8 @@ public class CampaignService {
             if (images.length > 5) {
                 throw new BadRequestException("Maximum 5 images allowed");
             }
-            List<String> uploadedUrls = imageService.uploadImage(images);
+            String campaignUuid = UUID.randomUUID().toString();
+            List<String> uploadedUrls = imageService.uploadImage(images, campaignUuid);
             campaign.setImageUrls(uploadedUrls);
         }
 
@@ -87,11 +93,15 @@ public class CampaignService {
             new ArrayList<>(campaign.getImageUrls()) : new ArrayList<>();
 
         if (imagesToRemove != null && !imagesToRemove.isEmpty()) {
+            for (String imageUrl : imagesToRemove) {
+                s3BucketService.deleteFile(imageUrl);
+            }
             currentImages.removeAll(imagesToRemove);
         }
 
         if (newImages != null && newImages.length > 0) {
-            List<String> uploadedUrls = imageService.uploadImage(newImages);
+            String campaignUuid = UUID.randomUUID().toString();
+            List<String> uploadedUrls = imageService.uploadImage(newImages, campaignUuid);
             currentImages.addAll(uploadedUrls);
         }
 
@@ -139,14 +149,12 @@ public class CampaignService {
             if (campaignRequest.getImages().length > 5) {
                 throw new BadRequestException("Maximum 5 images allowed");
             }
-            List<String> uploadedUrls = imageService.uploadImage(campaignRequest.getImages());
+            String campaignUuid = UUID.randomUUID().toString();
+            List<String> uploadedUrls = imageService.uploadImage(campaignRequest.getImages(), campaignUuid);
             campaign.setImageUrls(uploadedUrls);
         }
 
-        // Validate complete campaign before submission
         validateForSubmission(campaign);
-
-        // Set status to PENDING (direct submission)
         campaign.setStatus(CampaignStatus.ACTIVE);
 
         return campaignRepository.save(campaign);
@@ -213,9 +221,14 @@ public class CampaignService {
     }
 
 
-    public Page<Campaign> getCampaigns(int pageNumber, int pageSize, String sortBy){
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(sortBy));
-        return campaignRepository.findByStatus(CampaignStatus.ACTIVE, pageable);
+    public Page<Campaign> getCampaigns(int pageNumber, int pageSize, String sortBy, Long categoryId){
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(sortBy).descending());
+        return categoryId != null ? campaignRepository.findByStatusAndCategoryId(CampaignStatus.ACTIVE, categoryId, pageable) : campaignRepository.findByStatus(CampaignStatus.ACTIVE, pageable);
+    }
+
+    public Page<Campaign> getCampaignsByUserId(int pageNumber, int pageSize, String sortBy, Long userId){
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(sortBy).descending());
+        return campaignRepository.findByCreatorId(userId, pageable);
     }
 
     private boolean isBlank(String str) {
