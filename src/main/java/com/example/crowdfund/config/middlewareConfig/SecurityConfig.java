@@ -42,7 +42,6 @@ public class SecurityConfig {
             "/payment-success",
             "/payment-cancel",
             "/payment-error",
-            "/ws/**",
             "/onboarding-error",
             "/onboarding-success",
     };
