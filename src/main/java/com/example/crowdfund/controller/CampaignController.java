@@ -2,10 +2,12 @@ package com.example.crowdfund.controller;
 
 import com.example.crowdfund.dto.request.CampaignRequest;
 import com.example.crowdfund.entity.Campaign;
+import com.example.crowdfund.entity.Contribution;
 import com.example.crowdfund.entity.User;
 import com.example.crowdfund.service.campaign.CampaignService;
 import com.example.crowdfund.service.user.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -95,5 +97,14 @@ public class CampaignController {
     @GetMapping(value = "/user")
     public ResponseEntity<?> getUserCampaign(@RequestParam int pageNumber, @RequestParam int pageSize, @RequestParam String sortBy, @RequestParam Long userId){
         return  ResponseEntity.ok(campaignService.getCampaignsByUserId(pageNumber, pageSize, sortBy, userId));
+    }
+
+    @GetMapping(value = "/donors")
+    public ResponseEntity<?> getCampaignDonors(@RequestParam int pageNumber, @RequestParam int pageSize, @RequestParam Long campaignId, @RequestParam String sortBy){
+        Page<Contribution> contributors =campaignService.getCampaignContributors(pageNumber, pageSize, sortBy, campaignId);
+        HashMap<String , Object> response = new HashMap<>();
+        response.put("message", "Donor list retrieved successfully");
+        response.put("campaign", contributors);
+        return ResponseEntity.ok(response);
     }
 }
