@@ -5,9 +5,11 @@ import com.example.crowdfund.GloablExceptionHandler.BadRequestException;
 import com.example.crowdfund.GloablExceptionHandler.ResourceAlreadyExistsException;
 import com.example.crowdfund.entity.Campaign;
 import com.example.crowdfund.entity.Category;
+import com.example.crowdfund.entity.Contribution;
 import com.example.crowdfund.entity.User;
 import com.example.crowdfund.enums.CampaignStatus;
 import com.example.crowdfund.repository.CampaignRepository;
+import com.example.crowdfund.repository.ContributionRepository;
 import com.example.crowdfund.service.category.CategoryService;
 import com.example.crowdfund.service.aws.ImageService;
 import com.example.crowdfund.service.aws.S3BucketService;
@@ -34,6 +36,7 @@ public class CampaignService {
 
     private final CampaignRepository campaignRepository;
     private final CategoryService categoryService;
+    private final ContributionRepository contributionRepository;
 
     @Autowired
     private ImageService imageService;
@@ -229,6 +232,11 @@ public class CampaignService {
     public Page<Campaign> getCampaignsByUserId(int pageNumber, int pageSize, String sortBy, Long userId){
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(sortBy).descending());
         return campaignRepository.findByCreatorId(userId, pageable);
+    }
+
+    public Page<Contribution> getCampaignContributors(int pageNumber, int pageSize, String sortBy, Long campaignId){
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(sortBy).descending());
+        return contributionRepository.findByCampaignId(campaignId, pageable);
     }
 
     private boolean isBlank(String str) {
