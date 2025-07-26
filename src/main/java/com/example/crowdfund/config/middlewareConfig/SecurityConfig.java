@@ -44,6 +44,12 @@ public class SecurityConfig {
             "/payment-error",
             "/onboarding-error",
             "/onboarding-success",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/v2/api-docs/**",
+            "/swagger-resources/**",
+            "/webjars/**",
+            "/swagger-ui.html"
     };
 
     @Bean

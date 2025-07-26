@@ -19,8 +19,8 @@ import java.util.Map;
  /*
     TODO
     1. Update Campaign (Tomorrow) - DONE
-    2. Pagination (At Last)
-    3. Image Upload (Tomorrow) - Login, Campaign - DONE - DO in S3 bucket
+    2. Pagination DONE
+    3. Image Upload (Tomorrow) - DONE
     4. Contribution (Stripe, Razor Pay, Google Pay, UPI) (DONE) - Finish remaining parts
        OnSuccess/OnFailure - Kafka -  Notification Service
     5. Anonymous Contribution (DONE)
